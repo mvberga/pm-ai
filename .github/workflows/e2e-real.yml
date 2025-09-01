@@ -1,0 +1,64 @@
+name: E2E Real (Docker Compose)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'Aplicação/**'
+  pull_request:
+    paths:
+      - 'Aplicação/**'
+
+jobs:
+  e2e-real:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node (for Cypress cache)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build and start services
+        working-directory: Aplicação
+        run: |
+          docker compose up -d --build
+
+      - name: Wait for backend health
+        run: |
+          for i in {1..40}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/api/v1/health || true)
+            if [ "$code" = "200" ]; then echo "backend up"; exit 0; fi
+            sleep 2
+          done
+          echo "Backend not healthy" && exit 1
+
+      - name: Wait for frontend
+        run: |
+          for i in {1..40}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:5174 || true)
+            if [ "$code" = "200" ] || [ "$code" = "404" ]; then echo "frontend up"; exit 0; fi
+            sleep 2
+          done
+          echo "Frontend not reachable" && exit 1
+
+      - name: Install Cypress (frontend)
+        working-directory: Aplicação/frontend
+        run: npm ci
+
+      - name: Cypress run (real backend)
+        working-directory: Aplicação/frontend
+        env:
+          CYPRESS_BASE_URL: http://localhost:5174
+        run: npx cypress run --spec "cypress/e2e/**/*.cy.js"
+
+      - name: Docker logs on failure
+        if: failure()
+        working-directory: Aplicação
+        run: |
+          docker compose logs backend
+          docker compose logs frontend
+
+

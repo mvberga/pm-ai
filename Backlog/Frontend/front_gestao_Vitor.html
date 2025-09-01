@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfólio Clientes Premium SC/MG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Light Theme */
+        .light body {
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+        .light .sidebar {
+            background-color: #0f172a;
+        }
+        .light .main-content-bg {
+            background-color: #f1f5f9;
+        }
+        .light .card-bg {
+            background-color: #ffffff;
+        }
+        .light .text-main { color: #1e293b; }
+        .light .text-secondary { color: #475569; }
+        .light .border-color { border-color: #e2e8f0; }
+        .light .gantt-bar-bg { background-color: #e2e8f0; }
+        .light .status-tooltip {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+        .light .status-tooltip-link {
+            color: #1e293b;
+        }
+        .light .tab-link { color: #6b7280; border-color: transparent; }
+        .light .tab-link:hover { color: #374151; border-color: #d1d5db; }
+        .light .tab-link.active { color: #0284c7; border-color: #0284c7; font-weight: 700; }
+
+
+        /* Dark Theme */
+        .dark body {
+            background-color: #1e293b;
+            color: #e2e8f0;
+        }
+        .dark .sidebar {
+            background-color: #0f172a;
+        }
+         .dark .main-content-bg {
+            background-color: #1e293b;
+        }
+        .dark .card-bg {
+            background-color: #0f172a99;
+        }
+        .dark .text-main { color: #f1f5f9; }
+        .dark .text-secondary { color: #94a3b8; }
+        .dark .border-color { border-color: #334155; }
+        .dark .gantt-bar-bg { background-color: #334155; }
+        .dark .city-card-projects {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+        }
+        .dark .city-card-projects a {
+            color: #e2e8f0 !important;
+        }
+        .dark .status-tooltip {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+        }
+        .dark .status-tooltip-link {
+            color: #e2e8f0 !important;
+        }
+        .dark .tab-link { color: #9ca3af; border-color: transparent; }
+        .dark .tab-link:hover { color: #e5e7eb; border-color: #4b5563; }
+        .dark .tab-link.active { color: #ffffff; border-color: #38bdf8; font-weight: 700; }
+
+
+        .sidebar-link.active {
+            background-color: #0284c7;
+            font-weight: 600;
+        }
+        .gantt-bar {
+            height: 100%;
+            border-radius: 0.25rem;
+        }
+        .timeline-marker {
+            transition: transform 0.2s ease-in-out;
+        }
+        .timeline-marker:hover {
+            transform: scale(1.6);
+            z-index: 10;
+        }
+        .timeline-marker .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .timeline-marker:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .triangle {
+            width: 0; 
+            height: 0; 
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 14px solid;
+        }
+        
+        .city-card-projects {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(0.5rem);
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+            pointer-events: none;
+        }
+        .city-card:hover .city-card-projects {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="relative min-h-screen lg:flex">
+        <!-- Overlay para menu mobile -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden hidden"></div>
+
+        <!-- Navegação Lateral (Sidebar) -->
+        <aside id="sidebar" class="w-72 sidebar shadow-lg text-white fixed inset-y-0 left-0 z-40 transform -translate-x-full transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0">
+            <div class="p-6 flex items-center border-b border-slate-700">
+                <div class="w-10 h-10 mr-3 flex-shrink-0">
+                    <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                        <rect width="40" height="40" rx="8" fill="#4A65E0"/>
+                        <text x="50%" y="50%" font-family="Inter, sans-serif" font-size="28" font-weight="bold" font-style="italic" fill="white" text-anchor="middle" dy=".35em">B</text>
+                    </svg>
+                </div>
+                <div>
+                    <span class="font-bold text-xl">Betha Sistemas</span>
+                    <span class="block text-sm text-slate-400">Portfólio de Projetos</span>
+                </div>
+            </div>
+            <nav id="main-nav" class="mt-4">
+                <!-- Links das cidades serão injetados aqui via JS -->
+            </nav>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 p-4 sm:p-6 main-content-bg">
+              <!-- Header do Conteúdo Principal -->
+            <div class="flex justify-between items-center mb-4">
+                <!-- Botão Hamburger para Mobile -->
+                <button id="hamburger-btn" class="p-2 rounded-md text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none lg:hidden">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                
+                <!-- O container do botão de tema fica aqui, mas sua visibilidade é controlada via JS -->
+                <div id="theme-toggle-container" class="flex justify-end w-full" style="display: none;">
+                    <button id="theme-toggle" class="p-2 rounded-full bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 dark:focus:ring-offset-slate-900">
+                        <svg id="theme-icon-light" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                        <svg id="theme-icon-dark" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="page-container">
+                <!-- Páginas serão injetadas aqui -->
+            </div>
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const pageContainer = document.getElementById('page-container');
+    const navMenu = document.getElementById('main-nav');
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIconLight = document.getElementById('theme-icon-light');
+    const themeIconDark = document.getElementById('theme-icon-dark');
+    const htmlEl = document.documentElement;
+
+    // --- Mobile Sidebar Logic ---
+    const sidebar = document.getElementById('sidebar');
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    const toggleSidebar = () => {
+        sidebar.classList.toggle('-translate-x-full');
+        sidebar.classList.toggle('translate-x-0');
+        sidebarOverlay.classList.toggle('hidden');
+    };
+
+    hamburgerBtn.addEventListener('click', toggleSidebar);
+    sidebarOverlay.addEventListener('click', toggleSidebar);
+    // --- End Mobile Sidebar Logic ---
+
+
+    // Theme switcher logic
+    themeToggle.addEventListener('click', () => {
+        htmlEl.classList.toggle('dark');
+        htmlEl.classList.toggle('light');
+        updateThemeIcons();
+    });
+
+    function updateThemeIcons() {
+        if (htmlEl.classList.contains('dark')) {
+            themeIconLight.classList.add('hidden');
+            themeIconDark.classList.remove('hidden');
+        } else {
+            themeIconLight.classList.remove('hidden');
+            themeIconDark.classList.add('hidden');
+        }
+    }
+    
+    // Data for the main project dashboard - UPDATED FROM SPREADSHEET
+    const allProjectsData = [
+    {
+        "id": "lagoa-santa-notas-e-livro",
+        "name": "Lagoa Santa - Notas e Livro",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-08-13", "fim": "2025-10-24", "checklist": "Em andamento" },
+            { "etapa": "Kickoff", "inicio": "2025-08-22", "fim": "2025-08-22", "checklist": "Concluido" },
+            { "etapa": "Diagnostico", "inicio": "2025-08-13", "fim": "2025-08-29", "checklist": "Concluido" },
+            { "etapa": "Migração de Homologação", "inicio": "2025-08-13", "fim": "2025-09-05", "checklist": "Em andamento" },
+            { "etapa": "Homologação e Configruação da migração", "inicio": "2025-09-05", "fim": "2025-09-20", "checklist": "Não iniciado" },
+            { "etapa": "Migração em Produção", "inicio": "2025-09-20", "fim": "2025-09-25", "checklist": "Não iniciado" },
+            { "etapa": "Configuração de PRD", "inicio": "2025-09-22", "fim": "2025-09-25", "checklist": "Não iniciado" },
+            { "etapa": "Treinamento e simulação da operação", "inicio": "2025-09-19", "fim": "2025-09-25", "checklist": "Não iniciado" },
+            { "etapa": "Operação assistida", "inicio": "2025-09-24", "fim": "2025-10-24", "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [ "Kickoff realizado.", "Migração dentro do prazo" ],
+        "dados": { "gerentedeprojeto": "Vitor Vargas", "implantador": "Roberto Senra", "cliente": "Dalmar", "recursos": 4, "implantação": 13000, "recorrente": 15000 }
+    },
+    {
+        "id": "lagoa-santa-beth",
+        "name": "Lagoa Santa - Beth",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-08-20", "fim": "2025-09-30", "checklist": "Em andamento" },
+            { "etapa": "Kickoff", "inicio": "2025-08-22", "fim": "2025-08-22", "checklist": "Concluido" },
+            { "etapa": "Diagnostico", "inicio": "2025-08-20", "fim": "2025-08-27", "checklist": "Concluido" },
+            { "etapa": "Migração de Homologação", "inicio": null, "fim": null, "checklist": "Não se aplica" },
+            { "etapa": "Homologação e Configruação da migração", "inicio": null, "fim": null, "checklist": "Não se aplica" },
+            { "etapa": "Migração em Produção", "inicio": null, "fim": null, "checklist": "Não se aplica" },
+            { "etapa": "Configuração de PRD", "inicio": "2025-08-27", "fim": "2025-09-05", "checklist": "Em andamento" },
+            { "etapa": "Treinamento e simulação da operação", "inicio": "2025-09-05", "fim": "2025-09-12", "checklist": "Não iniciado" },
+            { "etapa": "Operação assistida", "inicio": "2025-09-12", "fim": "2025-09-30", "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [ "Kickoff realizado.", "Migração dentro do prazo" ],
+        "dados": { "gerentedeprojeto": "Vitor Vargas", "implantador": "Ramon Dos Santos", "cliente": "Dalmar", "recursos": 1, "implantação": 2000, "recorrente": 5300 }
+    },
+    {
+        "id": "lagoa-santa-saude",
+        "name": "Lagoa Santa - Saúde",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-08-20", "fim": "2025-12-12", "checklist": "Em andamento" },
+            { "etapa": "Kick-Off", "inicio": "2025-08-20", "fim": "2025-08-20", "checklist": "Concluido" },
+            { "etapa": "Diagnóstico", "inicio": "2025-08-20", "fim": "2025-08-29", "checklist": "Em andamento" },
+            { "etapa": "Diagnóstico Técnico", "inicio": "2025-08-25", "fim": "2025-09-12", "checklist": "Não iniciado" },
+            { "etapa": "Migração de HML", "inicio": "2025-09-15", "fim": "2025-10-03", "checklist": "Não iniciado" },
+            { "etapa": "Configuração de HML", "inicio": "2025-10-06", "fim": "2025-10-10", "checklist": "Não iniciado" },
+            { "etapa": "Homologação de HML", "inicio": "2025-10-13", "fim": "2025-10-31", "checklist": "Não iniciado" },
+            { "etapa": "Migração de Produção", "inicio": "2025-10-31", "fim": "2025-11-09", "checklist": "Não iniciado" },
+            { "etapa": "Treinamento", "inicio": "2025-10-13", "fim": "2025-11-09", "checklist": "Não iniciado" },
+            { "etapa": "Análise Inicial", "inicio": "2025-11-10", "fim": "2025-11-14", "checklist": "Não iniciado" },
+            { "etapa": "Estabilização", "inicio": "2025-11-17", "fim": "2025-11-28", "checklist": "Não iniciado" },
+            { "etapa": "Operação Assistida", "inicio": "2025-12-01", "fim": "2025-12-12", "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [ "Dificuldade em conseguir as bases", "Comunicação dificil cliente faltou na reunião de Kick-Off", "Cliente trouxe a necessidade de realizar um novo termo de aditivo para contemplar requisitos de sistema/negócio" ],
+        "dados": { "gerentedeprojeto": "Marcos Bergamaschi", "implantador": "Odair Junior", "cliente": "Alan", "recursos": 5, "implantação": 40000, "recorrente": 23900 }
+    },
+    {
+        "id": "jaragua-do-sul-protocolo-samae",
+        "name": "Jaraguá do Sul - Protocolo Samae",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-08-13", "fim": "2025-10-24", "checklist": "Em andamento" },
+            { "etapa": "Kick-Off", "inicio": "2025-08-10", "fim": "2025-08-10", "checklist": "Concluido" },
+            { "etapa": "Diagnostico", "inicio": "2025-08-13", "fim": "2025-08-29", "checklist": "Concluido" },
+            { "etapa": "Migração de Homologação", "inicio": "2025-08-13", "fim": "2025-08-29", "checklist": "Concluido" },
+            { "etapa": "Homologação e Configruação da migração", "inicio": "2025-08-29", "fim": "2025-09-03", "checklist": "Concluido" },
+            { "etapa": "Migração em Produção", "inicio": "2025-08-29", "fim": "2025-09-05", "checklist": "Não iniciado" },
+            { "etapa": "Configuração de PRD", "inicio": "2025-09-05", "fim": "2025-09-06", "checklist": "Não iniciado" },
+            { "etapa": "Treinamento e simulação da operação", "inicio": "2025-08-29", "fim": "2025-09-05", "checklist": "Não iniciado" },
+            { "etapa": "Operação assistida", "inicio": "2025-09-05", "fim": "2025-09-15", "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [ "Já foi remarcardo 2 vezes por conta do cliente", "Aguardando o retorno da ferias do Charles para iniciar a migração (solicitação do cliente)" ],
+        "dados": { "gerentedeprojeto": "Marcos Bergamaschi", "implantador": "Simon", "cliente": "Charles e Andrei", "recursos": 3, "implantação": 4000, "recorrente": "Não se Aplica" }
+    },
+    {
+        "id": "jaragua-do-sul-notas",
+        "name": "Jaraguá do Sul - Notas",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-08-21", "fim": "2025-08-28", "checklist": "Em andamento" },
+            { "etapa": "Kick-Off", "inicio": "2025-08-21", "fim": "2025-08-21", "checklist": "Concluido" },
+            { "etapa": "Diagnóstico Técnico", "inicio": "2025-08-25", "fim": "2025-09-05", "checklist": "Não iniciado" },
+            { "etapa": "Migração em Produção", "inicio": "2025-08-25", "fim": "2025-09-05", "checklist": "Não iniciado" },
+            { "etapa": "Configuração em Produção", "inicio": "2025-09-08", "fim": "2025-09-19", "checklist": "Não iniciado" },
+            { "etapa": "Validação em Produção", "inicio": "2025-09-08", "fim": "2025-09-19", "checklist": "Não iniciado" },
+            { "etapa": "Treinamento - Time interno", "inicio": "2025-09-27", "fim": "2025-09-27", "checklist": "Não iniciado" },
+            { "etapa": "Apresentação - Empresas de Software", "inicio": "2025-09-28", "fim": "2025-09-28", "checklist": "Não iniciado" },
+            { "etapa": "Envio dos materiais de Treinamento", "inicio": "2025-09-08", "fim": "2025-09-08", "checklist": "Não iniciado" },
+            { "etapa": "Apresentação - Contadores (definir)", "inicio": "2025-09-15", "fim": "2025-09-19", "checklist": "Não iniciado" },
+            { "etapa": "Agenda de Dúvidas - Time interno (definir)", "inicio": "2025-09-15", "fim": "2025-09-19", "checklist": "Não iniciado" },
+            { "etapa": "Virada oficial - Empresas selecionadas", "inicio": "2025-09-22", "fim": "2025-09-22", "checklist": "Não iniciado" },
+            { "etapa": "Virada oficial - Demais empresas", "inicio": "2025-09-29", "fim": "2025-09-29", "checklist": "Não iniciado" },
+            { "etapa": "Operação Assistida", "inicio": "2025-09-29", "fim": "2025-10-10", "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [ "Kickoff realizado e datas aceitas pelo cliente" ],
+        "dados": { "gerentedeprojeto": "Marcos Bergamaschi", "implantador": "Rafael Curi", "cliente": "Marcio", "recursos": 2, "implantação": 20000, "recorrente": "Não se aplica" }
+    },
+    {
+        "id": "major-gercino",
+        "name": "Major Gercino",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-07-10", "fim": "2025-09-15", "checklist": "Em andamento" },
+            { "etapa": "Kick-Off", "inicio": "2025-07-10", "fim": "2025-07-10", "checklist": "Concluido" },
+            { "etapa": "Diagnostico", "inicio": "2025-07-21", "fim": "2025-07-28", "checklist": "Concluido" },
+            { "etapa": "Migração de Homologação", "inicio": "2025-07-21", "fim": "2025-08-01", "checklist": "Concluido" },
+            { "etapa": "Homologação e Configruação da migração", "inicio": "2025-08-01", "fim": "2025-08-08", "checklist": "Concluido" },
+            { "etapa": "Migração em Produção", "inicio": "2025-08-08", "fim": "2025-08-18", "checklist": "Concluido" },
+            { "etapa": "Configuração de PRD", "inicio": "2025-08-15", "fim": "2025-08-18", "checklist": "Concluido" },
+            { "etapa": "Treinamento e simulação da operação", "inicio": "2025-08-11", "fim": "2025-08-18", "checklist": "Concluido" },
+            { "etapa": "Operação assistida", "inicio": "2025-08-18", "fim": "2025-09-15", "checklist": "Em Andamento" }
+        ],
+        "pontosAtencao": [ "Projeto sofreu diversas alterações devidos a fatores externos e do cliente.", "Esta ocorrendo tudo ok durante a virada.", "Apenas arrecadação ficou para depois." ],
+        "dados": { "gerentedeprojeto": "Vitor Vargas e Marcos Bergamaschi", "implantador": "Diversos", "cliente": "Rony", "recursos": 8, "implantação": 61172.62, "recorrente": "Não se aplica" }
+    },
+    {
+        "id": "lages-notas",
+        "name": "Lages - Notas",
+        "cronograma": [
+            { "etapa": "Planejamneto e Monitoramento", "inicio": "2025-08-18", "fim": "2025-08-29", "checklist": "Em andamento" },
+            { "etapa": "Kick-Off", "inicio": "2025-08-21", "fim": "2025-08-21", "checklist": "Concluido" },
+            { "etapa": "Treinamento Interno", "inicio": "2025-09-11", "fim": "2025-09-11", "checklist": "Não Iniciado" },
+            { "etapa": "Apresentação p/ Contadores e Empresas", "inicio": "2025-09-11", "fim": "2025-09-11", "checklist": "Não Iniciado" },
+            { "etapa": "Virada Oficial para empresas selecionadas", "inicio": "2025-09-24", "fim": "2025-09-24", "checklist": "Não Iniciado" },
+            { "etapa": "Virda Oficial para todos", "inicio": "2025-10-01", "fim": "2025-10-01", "checklist": "Não Iniciado" },
+            { "etapa": "Operação Assistida", "inicio": "2025-10-01", "fim": "2025-10-10", "checklist": "Não Iniciado" }
+        ],
+        "pontosAtencao": [ "Kickoff realizado e datas aceitas pelo cliente" ],
+        "dados": { "gerentedeprojeto": "Vitor Vargas", "implantador": "Willian", "cliente": "Jorge", "recursos": 1, "implantação": 13048.65, "recorrente": "Não se aplica" }
+    },
+    {
+        "id": "divinopolis-notas",
+        "name": "Divinópolis - Notas",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-08-18", "fim": "2025-09-29", "checklist": "Em andamento" },
+            { "etapa": "Kick-Off", "inicio": null, "fim": null, "checklist": "A definir" },
+            { "etapa": "Treinamento Interno", "inicio": null, "fim": null, "checklist": "A definir" },
+            { "etapa": "Apresentação p/ Contadores e Empresas", "inicio": null, "fim": null, "checklist": "A definir" },
+            { "etapa": "Virada Oficial para empresas selecionadas", "inicio": null, "fim": null, "checklist": "A definir" },
+            { "etapa": "Virda Oficial para todos", "inicio": null, "fim": null, "checklist": "A definir" }
+        ],
+        "pontosAtencao": [ "Estamos em alinhamento das datas com o Gabriel" ],
+        "dados": { "gerentedeprojeto": "Vitor Vargas", "implantador": "Rafael Curi", "cliente": "A definir", "recursos": 1, "implantação": "sem valor", "recorrente": "sem valor" }
+    },
+    {
+        "id": "sao-bento-do-sul-qlik",
+        "name": "São Bento do Sul - Qlik",
+        "cronograma": [
+            { "etapa": "Configuração de PRD", "inicio": "2025-08-04", "fim": "2025-08-15", "checklist": "Concluido" },
+            { "etapa": "Treinamento e simulação da operação", "inicio": "2025-08-25", "fim": "2025-08-26", "checklist": "Concluido" },
+            { "etapa": "Liberação para uso", "inicio": "2025-08-25", "fim": "2025-08-25", "checklist": "Concluido" },
+            { "etapa": "Operação Assistida", "inicio": "2025-08-25", "fim": "2025-08-29", "checklist": "Em andamento" }
+        ],
+        "pontosAtencao": [ "\"Realizado pelo parceiro, apenas acompanhamos\"", "Max esta organizando a cobrança separado do educação para já recebermos o Qlik" ],
+        "dados": { "gerentedeprojeto": "Vitor Vargas", "implantador": "Parceiro", "cliente": "A definir", "recursos": 1, "implantação": 6438.99, "recorrente": "Não se Aplica" }
+    },
+    {
+        "id": "sao-bento-do-sul-educacao",
+        "name": "São Bento do Sul - Educação",
+        "cronograma": [
+            { "etapa": "Higienização e Migração de dados", "inicio": "2025-09-01", "fim": "2025-09-20", "checklist": "Em andamento" },
+            { "etapa": "Treinamento de Usuários Pré-implantação", "inicio": "2025-09-01", "fim": "2025-09-20", "checklist": "Em andamento" },
+            { "etapa": "Operação Assistida", "inicio": "2025-09-20", "fim": "2025-09-30", "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [],
+        "dados": { "gerentedeprojeto": "N/A", "implantador": "Alex", "cliente": "São Bento", "recursos": 1, "educação": 42326.21, "recorrente": "Não se Aplica" }
+    },
+    {
+        "id": "sangao-contratos",
+        "name": "Sangão - Contratos",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-08-25", "fim": "2025-10-24", "checklist": "Em andamento" },
+            { "etapa": "Kick-Off", "inicio": "2025-08-28", "fim": "2025-08-28", "checklist": "Concluido" },
+            { "etapa": "Diagnóstico Técnico", "inicio": "2025-09-08", "fim": "2025-09-19", "checklist": "Não iniciado" },
+            { "etapa": "Migração de HML", "inicio": "2025-09-08", "fim": "2025-09-19", "checklist": "Não iniciado" },
+            { "etapa": "Configuração de HML", "inicio": "2025-09-22", "fim": "2025-09-29", "checklist": "Não iniciado" },
+            { "etapa": "Homologação de HML", "inicio": "2025-09-22", "fim": "2025-10-03", "checklist": "Não iniciado" },
+            { "etapa": "Migração de Produção", "inicio": "2025-10-06", "fim": "2025-10-17", "checklist": "Não iniciado" },
+            { "etapa": "Treinamento", "inicio": "2025-10-06", "fim": "2025-10-17", "checklist": "Não iniciado" },
+            { "etapa": "Configuração em Produção", "inicio": "2025-10-10", "fim": "2025-10-14", "checklist": "Não iniciado" },
+            { "etapa": "Estabilização", "inicio": "2025-10-13", "fim": "2025-10-17", "checklist": "Não iniciado" },
+            { "etapa": "Operação Assistida", "inicio": "2025-10-13", "fim": "2025-10-24", "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [],
+        "dados": { "gerentedeprojeto": "Marcos Bergameschi", "implantador": "A Definir", "cliente": "A Definir", "recursos": "A definir", "implantação": 55438.64, "recorrente": "Não se aplica" }
+    },
+    {
+        "id": "sangao-pessoal",
+        "name": "Sangão - Pessoal",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-08-25", "fim": "2025-10-24", "checklist": "Em andamento" },
+            { "etapa": "Kick-Off", "inicio": "2025-08-28", "fim": "2025-08-28", "checklist": "Concluido" },
+            { "etapa": "Diagnóstico Técnico", "inicio": "2025-09-08", "fim": "2025-09-19", "checklist": "Não iniciado" },
+            { "etapa": "Migração de HML", "inicio": "2025-09-08", "fim": "2025-09-19", "checklist": "Não iniciado" },
+            { "etapa": "Configuração de HML", "inicio": "2025-09-22", "fim": "2025-09-29", "checklist": "Não iniciado" },
+            { "etapa": "Homologação de HML", "inicio": "2025-09-22", "fim": "2025-10-03", "checklist": "Não iniciado" },
+            { "etapa": "Migração de Produção", "inicio": "2025-10-06", "fim": "2025-10-17", "checklist": "Não iniciado" },
+            { "etapa": "Treinamento", "inicio": "2025-10-06", "fim": "2025-10-17", "checklist": "Não iniciado" },
+            { "etapa": "Configuração em Produção", "inicio": "2025-10-10", "fim": "2025-10-14", "checklist": "Não iniciado" },
+            { "etapa": "Estabilização", "inicio": "2025-10-13", "fim": "2025-10-17", "checklist": "Não iniciado" },
+            { "etapa": "Operação Assistida", "inicio": "2025-10-13", "fim": "2025-10-24", "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [],
+        "dados": { "gerentedeprojeto": "Marcos Bergameschi", "implantador": "A Definir", "cliente": "A Definir", "recursos": "A definir", "implantação": 0, "recorrente": "Não se aplica" }
+    },
+    {
+        "id": "sangao-arrecadacao",
+        "name": "Sangão - Arrecadação",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-08-25", "fim": "2025-10-24", "checklist": "Em andamento" },
+            { "etapa": "Kick-Off", "inicio": "2025-08-28", "fim": "2025-08-28", "checklist": "Concluido" },
+            { "etapa": "Diagnóstico Técnico", "inicio": "2025-09-15", "fim": "2025-09-26", "checklist": "Não iniciado" },
+            { "etapa": "Migração de HML", "inicio": "2025-09-15", "fim": "2025-09-26", "checklist": "Não iniciado" },
+            { "etapa": "Configuração de HML", "inicio": "2025-09-29", "fim": "2025-10-03", "checklist": "Não iniciado" },
+            { "etapa": "Homologação de HML", "inicio": "2025-09-29", "fim": "2025-10-10", "checklist": "Não iniciado" },
+            { "etapa": "Migração de Produção", "inicio": "2025-10-13", "fim": "2025-10-24", "checklist": "Não iniciado" },
+            { "etapa": "Treinamento", "inicio": "2025-10-13", "fim": "2025-10-24", "checklist": "Não iniciado" },
+            { "etapa": "Configuração em Produção", "inicio": "2025-10-20", "fim": "2025-10-31", "checklist": "Não iniciado" },
+            { "etapa": "Estabilização", "inicio": "2025-10-20", "fim": "2025-10-31", "checklist": "Não iniciado" },
+            { "etapa": "Operação Assistida", "inicio": "2025-10-20", "fim": "2025-11-07", "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [ "Sera iniciado um pouco depois devido a disponibilidade do implantador" ],
+        "dados": { "gerentedeprojeto": "Marcos Bergameschi", "implantador": "A Definir", "cliente": "A Definir", "recursos": "A definir", "implantação": 0, "recorrente": "Não se aplica" }
+    },
+    {
+        "id": "sangao-contabilidade",
+        "name": "Sangão - Contabilidade",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-08-25", "fim": "2025-10-24", "checklist": "Em andamento" },
+            { "etapa": "Kick-Off", "inicio": "2025-08-28", "fim": "2025-08-28", "checklist": "Concluido" },
+            { "etapa": "Diagnóstico Técnico", "inicio": "2025-09-08", "fim": "2025-09-19", "checklist": "Não iniciado" },
+            { "etapa": "Migração de HML", "inicio": "2025-09-08", "fim": "2025-09-19", "checklist": "Não iniciado" },
+            { "etapa": "Configuração de HML", "inicio": "2025-09-22", "fim": "2025-09-29", "checklist": "Não iniciado" },
+            { "etapa": "Homologação de HML", "inicio": "2025-09-22", "fim": "2025-10-03", "checklist": "Não iniciado" },
+            { "etapa": "Migração de Produção", "inicio": "2025-10-06", "fim": "2025-10-17", "checklist": "Não iniciado" },
+            { "etapa": "Treinamento", "inicio": "2025-10-06", "fim": "2025-10-17", "checklist": "Não iniciado" },
+            { "etapa": "Configuração em Produção", "inicio": "2025-10-10", "fim": "2025-10-14", "checklist": "Não iniciado" },
+            { "etapa": "Estabilização", "inicio": "2025-10-13", "fim": "2025-10-17", "checklist": "Não iniciado" },
+            { "etapa": "Operação Assistida", "inicio": "2025-10-13", "fim": "2025-10-24", "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [],
+        "dados": { "gerentedeprojeto": "Marcos Bergameschi", "implantador": "A Definir", "cliente": "A Definir", "recursos": "A definir", "implantação": 0, "recorrente": "Não se aplica" }
+    },
+    {
+        "id": "pedras-grandes",
+        "name": "Pedras Grandes",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": "2025-08-25", "fim": "2025-10-24", "checklist": "Em andamento" },
+            { "etapa": "Kick-Off", "inicio": "2025-08-29", "fim": "2025-08-29", "checklist": "Em andamento" },
+            { "etapa": "Diagnostico", "inicio": null, "fim": null, "checklist": "Não iniciado" },
+            { "etapa": "Migração de Homologação", "inicio": null, "fim": null, "checklist": "Não iniciada" },
+            { "etapa": "Homologação e Configruação da migração", "inicio": null, "fim": null, "checklist": "Não iniciado" },
+            { "etapa": "Migração em Produção", "inicio": null, "fim": null, "checklist": "Não iniciado" },
+            { "etapa": "Configuração de PRD", "inicio": null, "fim": null, "checklist": "Não iniciado" },
+            { "etapa": "Treinamento e simulação da operação", "inicio": null, "fim": null, "checklist": "Não iniciado" },
+            { "etapa": "Operação assistida", "inicio": null, "fim": null, "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [ "Sera iniciado as avaliações dia 01/09" ],
+        "dados": { "gerentedeprojeto": null, "implantador": null, "cliente": null, "implantação": 63183.55, "recorrente": "não se aplica", "recursos": "A Definir" }
+    },
+    {
+        "id": "armazem",
+        "name": "Armazém",
+        "cronograma": [
+            { "etapa": "Planejamento e Monitoramento", "inicio": null, "fim": null, "checklist": "Não iniciada" },
+            { "etapa": "Kick-Off", "inicio": null, "fim": null, "checklist": "Não iniciada" },
+            { "etapa": "Diagnostico", "inicio": null, "fim": null, "checklist": "Não iniciada" },
+            { "etapa": "Migração de Homologação", "inicio": null, "fim": null, "checklist": "Não iniciada" },
+            { "etapa": "Homologação e Configruação da migração", "inicio": null, "fim": null, "checklist": "Não iniciado" },
+            { "etapa": "Migração em Produção", "inicio": null, "fim": null, "checklist": "Não iniciado" },
+            { "etapa": "Configuração de PRD", "inicio": null, "fim": null, "checklist": "Não iniciado" },
+            { "etapa": "Treinamento e simulação da operação", "inicio": null, "fim": null, "checklist": "Não iniciado" },
+            { "etapa": "Operação assistida", "inicio": null, "fim": null, "checklist": "Não iniciado" }
+        ],
+        "pontosAtencao": [ "Sera iniciado as avaliações dia 01/09" ],
+        "dados": { "gerentedeprojeto": null, "implantador": null, "cliente": null, "implantação": 28032.79, "recorrente": "Não se aplica", "recursos": "A definir" }
+    }
+];
+
+    const inclusaoData = [
+    { "produto": "BI Educação e Gestão Escolar - Qlik - PM São Bento do Sul", "data": "2025-08-31", "valor": 5160.4 },
+    { "produto": "Beth - PM Lagoa Santa", "data": "2025-09-01", "valor": 5300 },
+    { "produto": "Livro Eletrônico - PM Lagoa Santa", "data": "2025-10-01", "valor": 5000 },
+    { "produto": "e-Nota (Cloud) - PM Lagoa Santa", "data": "2025-10-01", "valor": 10000 },
+    { "produto": "Saúde - PM Lagoa Santa", "data": "2025-11-01", "valor": 23900 }
+];
+    const inclusaoChartData = {
+    "labels": [ "Agosto", "Setembro", "Outubro", "Novembro" ],
+    "data": [ 5949.32, 6756.22, 15000, 23900 ]
+};
+    const implantacaoListData = [
+    { "produto": "e-Nota (Cloud) - PM Divinópolis", "data": "2025-08-01", "valor": 0 },
+    { "produto": "Controladoria - PM Divinópolis", "data": "2025-08-01", "valor": 0 },
+    { "produto": "Sist Social - Lliège - PM Passos Maia", "data": "2025-08-08", "valor": 5456 },
+    { "produto": "Documentos - PM Passos Maia", "data": "2025-08-13", "valor": 1000 },
+    { "produto": "Documentos - FMS Passos Maia", "data": "2025-08-25", "valor": 760 },
+    { "produto": "Procuradoria (Cloud) - PM Passos Maia", "data": "2025-08-28", "valor": 3000 },
+    { "produto": "e-Nota (Cloud) - PM Criciúma", "data": "2025-08-31", "valor": 0 },
+    { "produto": "Conecta - PM Lagoa Santa", "data": "2025-08-31", "valor": 0 },
+    { "produto": "Documentos - PM Lagoa Santa", "data": "2025-08-31", "valor": 0 },
+    { "produto": "BI Educação e Gestão Escolar - Qlik - PM São Bento do Sul", "data": "2025-08-31", "valor": 6438.99 },
+    { "produto": "Tributos (Cloud) - PM Passos Maia", "data": "2025-08-31", "valor": 7444 },
+    { "produto": "Vigilância Sanitária - LINK - FMS Santa Cruz do Sul", "data": "2025-08-31", "valor": 0 },
+    { "produto": "Tesouraria (Cloud) - FMS Passos Maia", "data": "2025-08-31", "valor": 580 },
+    { "produto": "Contabilidade (Cloud) - FMS Passos Maia", "data": "2025-08-31", "valor": 1500 },
+    { "produto": "Folha (Cloud) - FMS Passos Maia", "data": "2025-08-31", "valor": 2000 },
+    { "produto": "Patrimônio (Cloud) - FMS Passos Maia", "data": "2025-08-31", "valor": 200 },
+    { "produto": "Compras (Cloud) - FMS Passos Maia", "data": "2025-08-31", "valor": 1000 },
+    { "produto": "Recursos Humanos (Cloud) - FMS Passos Maia", "data": "2025-08-31", "valor": 700 },
+    { "produto": "e-Nota (Cloud) - PM Lages", "data": "2025-09-03", "valor": 13048.65 },
+    { "produto": "e-Nota (Cloud) - PM Jaraguá do Sul", "data": "2025-09-29", "valor": 20000 },
+    { "produto": "Protocolo (Cloud) - SAMAE - Jaraguá do Sul", "data": "2025-09-30", "valor": 4000 },
+    { "produto": "Tributos (Cloud) - PM Major Gercino", "data": "2025-09-30", "valor": 6000 },
+    { "produto": "Saúde - PM Lagoa Santa", "data": "2025-10-01", "valor": 40000 },
+    { "produto": "Beth - PM Lagoa Santa", "data": "2025-10-01", "valor": 2000 },
+    { "produto": "Livro Eletrônico - PM Lagoa Santa", "data": "2025-10-01", "valor": 13000 },
+    { "produto": "Contabilidade (Cloud) - PM Sangão", "data": "2025-10-24", "valor": 5000 },
+    { "produto": "Compras (Cloud) - PM Sangão", "data": "2025-10-24", "valor": 3000 },
+    { "produto": "Contratos (Cloud) - PM Sangão", "data": "2025-10-24", "valor": 600 },
+    { "produto": "Tesouraria (Cloud) - PM Sangão", "data": "2025-10-24", "valor": 580 },
+    { "produto": "Folha (Cloud) - PM Sangão", "data": "2025-10-24", "valor": 12500 },
+    { "produto": "Recursos Humanos (Cloud) - PM Sangão", "data": "2025-10-24", "valor": 1000 },
+    { "produto": "Patrimônio (Cloud) - PM Sangão", "data": "2025-10-24", "valor": 1500 },
+    { "produto": "Tributos (Cloud) - PM Sangão", "data": "2025-10-31", "valor": 6000 },
+    { "produto": "Folha (Cloud) - PM Pedras Grandes", "data": "2025-10-31", "valor": 13590 },
+    { "produto": "Recursos Humanos (Cloud) - PM Pedras Grandes", "data": "2025-10-31", "valor": 1087.2 },
+    { "produto": "Patrimônio (Cloud) - PM Pedras Grandes", "data": "2025-10-31", "valor": 1626 },
+    { "produto": "Tributos (Cloud) - PM Pedras Grandes", "data": "2025-10-31", "valor": 6504 },
+    { "produto": "Contratos (Cloud) - PM Pedras Grandes", "data": "2025-10-31", "valor": 1463.4 },
+    { "produto": "Compras (Cloud) - PM Pedras Grandes", "data": "2025-10-31", "valor": 3252 },
+    { "produto": "Convênios - PM Pedras Grandes", "data": "2025-10-31", "valor": 40.65 },
+    { "produto": "Controladoria - PM Pedras Grandes", "data": "2025-10-31", "valor": 162.6 },
+    { "produto": "Tesouraria (Cloud) - PM Pedras Grandes", "data": "2025-10-31", "valor": 772.35 },
+    { "produto": "Contabilidade (Cloud) - PM Pedras Grandes", "data": "2025-10-31", "valor": 3601.88 },
+    { "produto": "Tesouraria (Cloud) - PM Armazém - F. Criança/Adolec.", "data": "2025-10-31", "valor": 284.55 },
+    { "produto": "Convênios - PM Armazém - F. Criança/Adolec.", "data": "2025-10-31", "valor": 57.48 },
+    { "produto": "Prestação de Contas - PM Armazém - F. Criança/Adolec.", "data": "2025-10-31", "valor": 56.91 },
+    { "produto": "Contabilidade (Cloud) - PM Armazém - F. Criança/Adolec.", "data": "2025-10-31", "valor": 2276.4 },
+    { "produto": "Documentos - PM Armazém - F. Ass. Social", "data": "2025-10-31", "valor": 341.46 },
+    { "produto": "Monitor DF-e - PM Armazém - F. Ass. Social", "data": "2025-10-31", "valor": 227.64 },
+    { "produto": "Contabilidade (Cloud) - PM Armazém - F. Ass. Social", "data": "2025-10-31", "valor": 2276.4 }
+];
+    const implantacaoChartData = {
+    "labels": [ "Agosto ", "Setembro", "Outubro" ],
+    "data": [ 67617.99, 78535.34, 143708.56 ]
+};
+
+    const getCityName = (projectName) => {
+        if (projectName.startsWith('São Bento')) return 'São Bento do Sul';
+        if (projectName.startsWith('Jaraguá')) return 'Jaraguá do Sul';
+        if (projectName.startsWith('Lagoa Santa')) return 'Lagoa Santa';
+        if (projectName.startsWith('Major Gercino')) return 'Major Gercino';
+        if (projectName.startsWith('Lages')) return 'Lages';
+        if (projectName.startsWith('Divinópolis')) return 'Divinópolis';
+        if (projectName.startsWith('Sangão')) return 'Sangão';
+        if (projectName.startsWith('Pedras Grandes')) return 'Pedras Grandes';
+        if (projectName.startsWith('Armazém')) return 'Armazém';
+        const parts = projectName.split(' - ');
+        return parts.length > 1 ? parts[0] : projectName;
+    };
+
+    const groupedByCity = allProjectsData.reduce((acc, project) => {
+        const city = getCityName(project.name);
+        if (!acc[city]) {
+            acc[city] = {
+                id: city.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, ''),
+                name: city,
+                projects: []
+            };
+        }
+        acc[city].projects.push(project);
+        return acc;
+    }, {});
+
+
+    function renderSidebar() {
+        navMenu.innerHTML = `
+            <a href="#overview" class="sidebar-link flex items-center px-6 py-3 hover:bg-slate-700 transition-colors duration-200">
+                <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                Visão Geral
+            </a>
+            <a href="#timeline" class="sidebar-link flex items-center px-6 py-3 hover:bg-slate-700 transition-colors duration-200">
+               <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                Linha do Tempo
+            </a>
+            <a href="#financeiro-inclusao" class="sidebar-link flex items-center px-6 py-3 hover:bg-slate-700 transition-colors duration-200">
+               <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>
+                Financeiro - Inclusão
+            </a>
+             <a href="#projecao-implantacao" class="sidebar-link flex items-center px-6 py-3 hover:bg-slate-700 transition-colors duration-200">
+                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+                    Projeção de Implantação
+            </a>
+            <div class="px-6 mt-4 mb-2 text-xs uppercase text-slate-400">Cidades</div>
+        `;
+        Object.values(groupedByCity).forEach(city => {
+            const link = document.createElement('a');
+            link.href = `#${city.id}`;
+            link.className = 'sidebar-link flex items-center px-6 py-3 hover:bg-slate-700 transition-colors duration-200';
+            link.innerHTML = `<svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>${city.name}`;
+            navMenu.appendChild(link);
+        });
+    }
+
+    function renderPages() {
+        pageContainer.innerHTML = ''; 
+        
+        const overviewPage = document.createElement('div');
+        overviewPage.id = 'overview';
+        overviewPage.className = 'page';
+        pageContainer.appendChild(overviewPage);
+        renderOverviewContent(overviewPage);
+
+        const timelinePage = document.createElement('div');
+        timelinePage.id = 'timeline';
+        timelinePage.className = 'page';
+        pageContainer.appendChild(timelinePage);
+        renderTimelinePage(timelinePage);
+        
+        const financialInclusaoPage = document.createElement('div');
+        financialInclusaoPage.id = 'financeiro-inclusao';
+        financialInclusaoPage.className = 'page';
+        pageContainer.appendChild(financialInclusaoPage);
+        renderFinancialPage(financialInclusaoPage, 'Financeiro - Inclusão', inclusaoData, 'financialChartInclusao', inclusaoChartData);
+
+        const projecaoPage = document.createElement('div');
+        projecaoPage.id = 'projecao-implantacao';
+        projecaoPage.className = 'page';
+        pageContainer.appendChild(projecaoPage);
+        renderFinancialPage(projecaoPage, 'Projeção de implantação proximos 3 meses', implantacaoListData, 'financialChartImplantacao', implantacaoChartData);
+
+        Object.values(groupedByCity).forEach(city => {
+            const cityPage = document.createElement('div');
+            cityPage.id = city.id;
+            cityPage.className = 'page';
+            pageContainer.appendChild(cityPage);
+            renderCityPage(cityPage, city);
+        });
+    }
+
+    function renderCityPage(container, cityData) {
+        const getProjectShortName = (projectName, cityName) => {
+            let shortName = projectName.replace(cityName + ' - ', '');
+            if (cityName === 'São Bento do Sul' && projectName.includes('Qlik')) {
+                return 'Qlik';
+            }
+            return shortName;
+        };
+
+        const tabs = cityData.projects.map((p, index) => `
+            <li>
+                <button class="tab-link font-semibold inline-block p-4 border-b-2 rounded-t-lg ${index === 0 ? 'active' : ''}" data-target="${p.id}-content" data-full-name="${p.name}">
+                    ${getProjectShortName(p.name, cityData.name)}
+                </button>
+            </li>
+        `).join('');
+
+        const tabContents = cityData.projects.map((p, index) => `
+            <div id="${p.id}-content" class="tab-content ${index === 0 ? 'active' : ''}">
+                <!-- Project content will be rendered here -->
+            </div>
+        `).join('');
+
+        container.innerHTML = `
+            <h1 id="${cityData.id}-title" class="text-3xl md:text-4xl font-bold text-main mb-4">${cityData.projects[0].name}</h1>
+            <div class="mb-4 border-b border-color">
+                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="${cityData.id}-tabs">
+                    ${tabs}
+                </ul>
+            </div>
+            <div id="${cityData.id}-tab-content">
+                ${tabContents}
+            </div>
+        `;
+
+        // Render project content inside each tab
+        cityData.projects.forEach(p => {
+            const projectContainer = container.querySelector(`#${p.id}-content`);
+            renderProjectContent(projectContainer, p);
+        });
+
+        // Add event listener for tab clicks
+        const tabContainer = container.querySelector(`#${cityData.id}-tabs`);
+        const titleElement = container.querySelector(`#${cityData.id}-title`);
+        tabContainer.addEventListener('click', (e) => {
+            if (e.target.matches('.tab-link')) {
+                e.preventDefault();
+                
+                // Deactivate all tabs and content for this city
+                tabContainer.querySelectorAll('.tab-link').forEach(tab => tab.classList.remove('active'));
+                container.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+                // Activate clicked tab and corresponding content
+                e.target.classList.add('active');
+                const targetId = e.target.getAttribute('data-target');
+                const fullName = e.target.getAttribute('data-full-name');
+                container.querySelector(`#${targetId}`).classList.add('active');
+                titleElement.textContent = fullName;
+            }
+        });
+    }
+
+
+    function renderOverviewContent(container) {
+        
+        const cityCardsHtml = Object.values(groupedByCity).map(city => {
+            
+            const totalRecursos = city.projects.reduce((sum, p) => {
+                const recursos = parseInt(p.dados.recursos, 10);
+                return sum + (isNaN(recursos) ? 0 : recursos);
+            }, 0);
+
+            const totalImplantacao = city.projects.reduce((sum, p) => {
+                const implantacao = parseFloat(p.dados.implantacao || p.dados.implantação || p.dados.educação);
+                return sum + (isNaN(implantacao) ? 0 : implantacao);
+            }, 0);
+            
+            const totalRecorrente = city.projects.reduce((sum, p) => {
+                const recorrente = parseFloat(p.dados.recorrente);
+                return sum + (isNaN(recorrente) ? 0 : recorrente);
+            }, 0);
+            
+            const projectLinksHtml = city.projects.map(p => {
+                    let displayName = p.name.replace(city.name + ' - ', '');
+                    if (city.name === 'São Bento do Sul' && p.id === 'sao-bento-do-sul-qlik') {
+                            displayName = 'Qlik';
+                    }
+                    return `
+                        <li>
+                            <a href="#${city.id}" data-project-target="${p.id}-content" class="project-link block px-4 py-3 text-slate-700 dark:text-slate-200 hover:bg-sky-500 dark:hover:bg-sky-600 hover:text-white transition-colors text-sm font-medium">${displayName}</a>
+                        </li>
+                    `;
+            }).join('');
+
+            return `
+                <div class="relative group p-4 card-bg rounded-lg shadow-sm transition-all border border-color city-card hover:shadow-lg hover:border-sky-500 cursor-pointer" data-href="#${city.id}">
+                    <div class="flex justify-between items-start">
+                        <span class="font-semibold text-main text-lg">${city.name}</span>
+                    </div>
+                    <div class="mt-2 text-xs text-secondary space-y-1">
+                        <div><strong>Projetos:</strong> ${city.projects.length}</div>
+                        <div><strong>Recursos:</strong> ${totalRecursos > 0 ? totalRecursos : 'A definir'}</div>
+                        <div><strong>Implantação:</strong> ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalImplantacao)}</div>
+                        <div><strong>Recorrente:</strong> ${totalRecorrente > 0 ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalRecorrente) : 'N/A'}</div>
+                    </div>
+                    <div class="city-card-projects absolute z-20 top-full left-0 min-w-full bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg shadow-2xl overflow-hidden">
+                          <ul class="divide-y divide-slate-200 dark:divide-slate-700">
+                               ${projectLinksHtml}
+                          </ul>
+                    </div>
+                </div>`;
+        }).join('');
+        
+        const projectsByStatus = {
+            onTrack: [],
+            warning: [],
+            delayed: [],
+            completed: [],
+            notStarted: []
+        };
+
+        allProjectsData.forEach(p => {
+            const status = getProjectStatus(p);
+            if (status.text === 'Em Dia') projectsByStatus.onTrack.push(p);
+            else if (status.text === 'Atenção') projectsByStatus.warning.push(p);
+            else if (status.text === 'Atrasado') projectsByStatus.delayed.push(p);
+            else if (status.text === 'Concluído') projectsByStatus.completed.push(p);
+            else if (status.text === 'Não Iniciado') projectsByStatus.notStarted.push(p);
+        });
+
+        const createProjectListTooltip = (projects) => {
+            if (projects.length === 0) return '';
+            const projectLinksHtml = projects.map(p => {
+                const cityId = getCityName(p.name).toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+                return `
+                <li>
+                    <a href="#${cityId}" data-project-target="${p.id}-content" class="status-tooltip-link project-link block px-4 py-3 hover:bg-sky-100 dark:hover:bg-sky-600 transition-colors text-sm font-medium">${p.name}</a>
+                </li>
+            `}).join('');
+
+            return `
+                <div class="absolute z-20 top-full left-1/2 -translate-x-1/2 pt-2 w-72 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto transition-opacity duration-300">
+                    <div class="status-tooltip border rounded-lg shadow-2xl overflow-hidden">
+                        <ul class="divide-y divide-slate-200 dark:divide-slate-700 max-h-60 overflow-y-auto">
+                            ${projectLinksHtml}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        };
+        
+        const statusCard = (title, color, projects) => `
+            <div class="relative group">
+                <div class="card-bg p-4 rounded-lg shadow-sm text-center h-full">
+                    <h3 class="text-secondary font-semibold text-sm">${title}</h3>
+                    <p class="text-3xl font-bold ${color} mt-1">${projects.length}</p>
+                </div>
+                ${createProjectListTooltip(projects)}
+            </div>
+        `;
+
+        container.innerHTML = `
+            <h1 class="text-3xl md:text-4xl font-bold text-main mb-2">Portfólio Clientes Premium SC/MG</h1>
+            <div class="flex flex-col md:flex-row flex-wrap gap-x-8 gap-y-2 text-secondary mb-6 text-sm">
+                <span><strong>Gerente:</strong> Leandro de Faveri</span>
+                <span><strong>Coordenador:</strong> Maxwell Santos</span>
+                <span><strong>Gerentes de Projetos:</strong> Vitor Vargas, Marcos Bergamaschi</span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                <div class="card-bg p-4 rounded-lg shadow-sm text-center">
+                    <h3 class="text-secondary font-semibold text-sm">Total</h3>
+                    <p class="text-3xl font-bold text-main mt-1">${allProjectsData.length}</p>
+                </div>
+                ${statusCard('Não Iniciado', 'text-gray-400', projectsByStatus.notStarted)}
+                ${statusCard('Em Dia', 'text-green-500', projectsByStatus.onTrack)}
+                ${statusCard('Atenção', 'text-yellow-500', projectsByStatus.warning)}
+                ${statusCard('Atrasado', 'text-red-500', projectsByStatus.delayed)}
+                ${statusCard('Concluído', 'text-emerald-500', projectsByStatus.completed)}
+            </div>
+
+            <div class="card-bg p-4 rounded-lg shadow-sm">
+                <h2 class="text-xl font-bold mb-4 text-center text-main">Lista de Cidades com Projetos Ativos</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${cityCardsHtml}</div>
+            </div>`;
+    }
+
+    function renderTimelinePage(container) {
+         container.innerHTML = `
+            <h1 class="text-3xl md:text-4xl font-bold text-main mb-4">Linha do Tempo de Entregas</h1>
+            <div class="card-bg p-4 rounded-lg shadow-sm">
+                ${renderOverviewTimelineGrid()}
+            </div>
+            `;
+    }
+    
+    function renderFinancialPage(container, title, listData, chartId, chartDataSource) {
+        let totalValue = 0;
+        
+        if (chartDataSource && chartDataSource.data) {
+             totalValue = chartDataSource.data.reduce((sum, val) => sum + val, 0);
+        } else {
+             totalValue = listData.reduce((sum, item) => sum + (typeof item.valor === 'number' ? item.valor : 0), 0);
+        }
+
+        const formattedTotalValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue);
+
+        const productListHtml = listData.sort((a, b) => {
+            if (!a.data || !b.data) return 0;
+            return luxon.DateTime.fromISO(a.data) - luxon.DateTime.fromISO(b.data)
+        }).map(item => `
+            <li class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 hover:bg-slate-800/50 rounded-md">
+                <span class="text-secondary mb-1 sm:mb-0">${item.produto}</span>
+                <div class="flex items-center space-x-4 w-full sm:w-auto justify-between">
+                    <span class="font-mono text-sm text-secondary">${item.data ? luxon.DateTime.fromISO(item.data).toFormat('dd/MM/yyyy') : 'N/A'}</span>
+                    <span class="font-semibold text-main w-32 text-right">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor)}</span>
+                </div>
+            </li>
+        `).join('');
+
+        container.innerHTML = `
+            <h1 class="text-3xl md:text-4xl font-bold text-main mb-2">${title}</h1>
+            <p class="text-lg font-semibold text-sky-400 mb-6">Valor Total Projetado: ${formattedTotalValue}</p>
+            <div class="grid grid-cols-1 gap-6">
+                <div class="card-bg p-4 rounded-lg shadow-sm">
+                    <h2 class="text-xl font-bold mb-4 text-center text-main">Valor Total por Mês</h2>
+                    <div class="h-96">
+                        <canvas id="${chartId}"></canvas>
+                    </div>
+                </div>
+                <div class="card-bg p-4 rounded-lg shadow-sm">
+                     <h2 class="text-xl font-bold mb-4 text-center text-main">Lista de Produtos</h2>
+                     <div class="max-h-96 overflow-y-auto">
+                          <ul class="divide-y border-color">${productListHtml}</ul>
+                     </div>
+                </div>
+            </div>
+        `;
+
+        if (chartDataSource) {
+            renderFinancialChart(chartId, chartDataSource);
+        } else {
+             const monthlyTotals = listData.reduce((acc, item) => {
+                if (!item.data) return acc;
+                const month = luxon.DateTime.fromISO(item.data).toFormat('MMM/yy');
+                acc[month] = (acc[month] || 0) + item.valor;
+                return acc;
+            }, {});
+
+            const sortedMonths = Object.keys(monthlyTotals).sort((a,b) => luxon.DateTime.fromFormat(a, 'MMM/yy') - luxon.DateTime.fromFormat(b, 'MMM/yy'));
+            
+            const dynamicChartData = {
+                labels: sortedMonths,
+                data: sortedMonths.map(month => monthlyTotals[month])
+            };
+            renderFinancialChart(chartId, dynamicChartData);
+        }
+    }
+
+    function renderProjectContent(container, project) {
+        const attentionPointsHtml = project.pontosAtencao.map(p => `
+            <li class="p-2 font-bold text-main">${p}</li>
+        `).join('');
+        
+        const validEntries = project.cronograma.filter(item => item.inicio && item.fim);
+        let startDate = 'N/A';
+        let endDate = 'N/A';
+        let completionPercentage = 0;
+
+        if (validEntries.length > 0) {
+            const startDates = validEntries.map(e => luxon.DateTime.fromISO(e.inicio));
+            const endDates = validEntries.map(e => luxon.DateTime.fromISO(e.fim));
+            
+            startDate = luxon.DateTime.min(...startDates).toFormat('dd/MM/yyyy');
+            endDate = luxon.DateTime.max(...endDates).toFormat('dd/MM/yyyy');
+
+            const completedTasks = project.cronograma.filter(item => {
+                const status = item.checklist?.toLowerCase() || '';
+                return status.includes('concluido') || status.includes('finalizado');
+            }).length;
+            const totalTasks = project.cronograma.filter(item => item.checklist?.toLowerCase() !== 'não se aplica').length;
+            completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        }
+
+        const implantacaoValor = typeof (project.dados.implantacao || project.dados.implantação || project.dados.educação) === 'number'
+            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(project.dados.implantacao || project.dados.implantação || project.dados.educação)
+            : (project.dados.implantacao || project.dados.implantação || project.dados.educação) || 'N/A';
+
+        const recorrenteValor = typeof project.dados.recorrente === 'number'
+            ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(project.dados.recorrente)
+            : project.dados.recorrente || 'N/A';
+
+        const financialInfo = `
+            <div class="flex flex-col sm:flex-row flex-wrap gap-x-8 gap-y-2 text-secondary mb-4 border-t border-b border-color py-3">
+                <span><strong>Valor Implantação:</strong> ${implantacaoValor}</span>
+                <span><strong>Valor Recorrente:</strong> ${recorrenteValor}</span>
+            </div>
+        `;
+
+
+        const ganttLegend = `
+            <div class="flex flex-wrap gap-x-4 gap-y-2 mb-4 text-sm text-secondary">
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-emerald-500"></div><span>Concluído</span></div>
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-sky-500"></div><span>Em Andamento</span></div>
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div><span>Atrasado</span></div>
+                <div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-slate-400"></div><span>Não Iniciado</span></div>
+            </div>
+        `;
+        
+        const projectInfo = `
+            <div class="flex flex-col sm:flex-row flex-wrap justify-between items-center mb-4 text-secondary border-b border-t border-color py-3 gap-y-4">
+                <div class="text-sm"><strong>Início do Projeto:</strong> ${startDate}</div>
+                <div class="text-sm"><strong>Fim do Projeto:</strong> ${endDate}</div>
+                <div class="text-sm w-full sm:w-auto">
+                    <strong>Conclusão:</strong>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-1">
+                      <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${completionPercentage}%"></div>
+                    </div>
+                    <span class="font-bold">${completionPercentage}%</span>
+                </div>
+            </div>
+        `;
+
+        let arrecadacaoHtml = '';
+        if (project.id === 'major-gercino' && project.cronograma_arrecadacao) {
+            arrecadacaoHtml = `
+                <div class="mt-6">
+                     <h3 class="text-lg font-bold mb-4 text-main">Cronograma - Arrecadação</h3>
+                     <div class="space-y-3">${renderGanttChart(project.cronograma_arrecadacao)}</div>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = `
+            <div class="flex flex-col sm:flex-row flex-wrap gap-x-8 gap-y-2 text-secondary mb-4 text-sm">
+                <span><strong>Gerente de Projeto:</strong> ${project.dados.gerentedeprojeto || 'N/A'}</span>
+                <span><strong>Implantador:</strong> ${project.dados.implantador || 'N/A'}</span>
+                <span><strong>Cliente:</strong> ${project.dados.cliente || 'N/A'}</span>
+            </div>
+            ${financialInfo}
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 card-bg p-4 rounded-lg shadow-sm">
+                    <h2 class="text-xl font-bold mb-4 text-main">Cronograma do Projeto</h2>
+                    ${projectInfo}
+                    ${ganttLegend}
+                    <div class="space-y-3">${renderGanttChart(project.cronograma)}</div>
+                    ${arrecadacaoHtml}
+                </div>
+                <div class="lg:col-span-1 flex flex-col gap-6">
+                     <div class="card-bg p-4 rounded-lg shadow-sm">
+                         <h2 class="text-xl font-bold mb-4 text-main">Pontos de Atenção</h2>
+                         <ul class="space-y-3">${attentionPointsHtml || '<li>Nenhum ponto de atenção registrado.</li>'}</ul>
+                     </div>
+                </div>
+            </div>`;
+    }
+
+    function getProjectStatus(project) {
+        if (!project.cronograma || project.cronograma.length === 0) {
+            return { text: 'Sem Dados', color: 'bg-slate-400' };
+        }
+        
+        const allNotStarted = project.cronograma.every(item => {
+            const status = item.checklist?.toLowerCase() || '';
+            return status.includes('não iniciado') || status.includes('nao iniciada') || status.includes('a definir') || !item.inicio;
+        });
+
+        if (allNotStarted) {
+            return { text: 'Não Iniciado', color: 'bg-gray-400' };
+        }
+
+        const now = luxon.DateTime.now();
+        const lastDateEntry = [...project.cronograma].filter(item => item.fim).sort((a,b) => luxon.DateTime.fromISO(b.fim) - luxon.DateTime.fromISO(a.fim))[0];
+        if (!lastDateEntry) {
+             return { text: 'Não Iniciado', color: 'bg-gray-400' };
+        }
+        const lastDate = luxon.DateTime.fromISO(lastDateEntry.fim);
+
+        const allDone = project.cronograma.every(item => item.checklist?.toLowerCase().includes('concluido') || item.checklist?.toLowerCase().includes('finalizado'));
+
+        if (allDone) return { text: 'Concluído', color: 'bg-emerald-500' };
+
+        // Atrasado: se a data final for anterior ao dia de hoje.
+        if (lastDate < now.startOf('day')) {
+            return { text: 'Atrasado', color: 'bg-red-500' };
+        }
+
+        // Atenção: se a data final estiver nos próximos 7 dias (incluindo hoje).
+        if (lastDate.diff(now.startOf('day'), 'days').days <= 7) {
+            return { text: 'Atenção', color: 'bg-yellow-500' };
+        }
+        
+        return { text: 'Em Dia', color: 'bg-green-500' };
+    }
+    
+    function renderOverviewTimelineGrid() {
+        const projects = allProjectsData
+            .map(p => {
+                // Adjusted logic to find the correct dates based on user premises
+                const releaseEvent = p.cronograma.find(item => 
+                    item.etapa && (item.etapa.toLowerCase().includes('configuração de prd') ||
+                    item.etapa.toLowerCase().includes('configuração em produção') || 
+                    item.etapa.toLowerCase().includes('virada oficial'))
+                );
+                const endEvent = p.cronograma.find(item => item.etapa && item.etapa.toLowerCase().includes('operação assistida'));
+
+                const lastEntry = p.cronograma.length > 0 ? [...p.cronograma].filter(i => i.fim).sort((a,b) => luxon.DateTime.fromISO(b.fim) - luxon.DateTime.fromISO(a.fim))[0] : null;
+
+                return {
+                    name: p.name,
+                    // Use the specific end date for "Fim do projeto"
+                    endDate: endEvent && endEvent.fim ? luxon.DateTime.fromISO(endEvent.fim) : (lastEntry ? luxon.DateTime.fromISO(lastEntry.fim) : null),
+                    // Use the specific release date for "Liberação para o cliente"
+                    releaseDate: releaseEvent && releaseEvent.fim ? luxon.DateTime.fromISO(releaseEvent.fim) : null
+                }
+            })
+            .filter(p => p.endDate && p.endDate.isValid)
+            .sort((a, b) => a.endDate - b.endDate);
+
+        if (projects.length === 0) return '<p class="text-center text-secondary">Não há datas de término para exibir.</p>';
+
+        const minDate = projects[0].endDate.startOf('month');
+        const maxDate = projects[projects.length - 1].endDate.endOf('month').plus({months: 1});
+        const totalDays = maxDate.diff(minDate, 'days').days;
+
+        let dateMarkers = '';
+        let dateColumns = [];
+        let currentDate = minDate;
+        while (currentDate < maxDate) {
+            dateColumns.push(currentDate);
+            dateColumns.push(currentDate.set({day: 15}));
+            dateColumns.push(currentDate.endOf('month'));
+            currentDate = currentDate.plus({months: 1}).startOf('month');
+        }
+        dateColumns = [...new Map(dateColumns.map(item => [item.toISODate(), item])).values()].sort((a,b) => a-b);
+
+        dateMarkers = dateColumns.map(date => {
+            const daysFromStart = date.diff(minDate, 'days').days;
+            const leftPercent = (daysFromStart / totalDays) * 100;
+            
+            const showLabel = date.day !== 1 || daysFromStart === 0;
+
+            return `<div class="absolute text-center" style="left: ${leftPercent}%;">
+                <div class="h-full w-px border-color"></div>
+                ${showLabel ? `<span class="text-xs text-secondary absolute top-full mt-1" style="transform: translateX(-50%);">${date.toFormat('dd')}</span>` : ''}
+            </div>`
+        }).join('');
+
+        const monthMarkers = () => {
+            let markers = '';
+            let currentMonth = minDate;
+            while(currentMonth < maxDate) {
+                const daysInMonth = currentMonth.daysInMonth;
+                const widthPercent = (daysInMonth / totalDays) * 100;
+                markers += `<div style="width: ${widthPercent}%" class="text-center text-sm font-semibold text-secondary border-b-2 border-color pb-1">${currentMonth.toFormat('MMM/yy')}</div>`;
+                currentMonth = currentMonth.plus({months: 1});
+            }
+            return markers;
+        }
+        
+        const projectRows = projects.map(p => {
+            const daysFromStart = p.endDate.diff(minDate, 'days').days;
+            const leftPercent = (daysFromStart / totalDays) * 100;
+            
+            const isOverlapping = p.releaseDate && p.endDate ? Math.abs(p.releaseDate.diff(p.endDate, 'days').days) < 10 : false;
+
+            const dotTransform = isOverlapping ? 'translate(-50%, 25%)' : 'translate(-50%, -50%)';
+            const triangleTransform = isOverlapping ? 'translate(-50%, -125%)' : 'translate(-50%, -50%)';
+
+            const dot = `
+                <div class="absolute timeline-marker flex items-center" style="left: ${leftPercent}%; top: 50%; transform: ${dotTransform}; z-index: 5;">
+                    <div class="w-4 h-4 bg-green-500 rounded-full cursor-pointer border-2 border-white shadow-lg"></div>
+                    <span class="ml-2 text-xs font-semibold text-secondary whitespace-nowrap">${p.endDate.toFormat('dd/MM')}</span>
+                    <div class="tooltip absolute bottom-full mb-2 w-max p-2 bg-slate-800 text-white text-xs rounded-md shadow-lg" style="left: 50%; transform: translateX(-50%);">
+                        <strong>${p.name}</strong><br>Fim do Projeto: ${p.endDate.toFormat('dd/MM/yyyy')}
+                    </div>
+                </div>`;
+            
+            let triangle = '';
+            if (p.releaseDate && p.releaseDate.isValid) {
+                const releaseDaysFromStart = p.releaseDate.diff(minDate, 'days').days;
+                const releaseLeftPercent = (releaseDaysFromStart / totalDays) * 100;
+                
+                const isJaragua = p.name.includes('Jaraguá do Sul');
+                const labelContent = `<span class="text-xs font-semibold text-secondary whitespace-nowrap">${p.releaseDate.toFormat('dd/MM')}</span>`;
+                const triangleIcon = `<div class="triangle border-b-blue-500 cursor-pointer"></div>`;
+
+                let flexOrder = isJaragua ? 
+                    `${labelContent}<div class="w-2"></div>${triangleIcon}` : 
+                    `${triangleIcon}<div class="w-2"></div>${labelContent}`;
+                
+                triangle = `
+                    <div class="absolute timeline-marker flex items-center" style="left: ${releaseLeftPercent}%; top: 50%; transform: ${triangleTransform}; z-index: 6;">
+                        ${flexOrder}
+                         <div class="tooltip absolute bottom-full mb-2 w-max p-2 bg-slate-800 text-white text-xs rounded-md shadow-lg" style="left: 50%; transform: translateX(-50%);">
+                              <strong>${p.name}</strong><br>Liberação Cliente: ${p.releaseDate.toFormat('dd/MM/yyyy')}
+                         </div>
+                    </div>`;
+            }
+
+            return `
+                <div class="flex items-center border-t border-color h-16">
+                    <div class="w-48 pr-4 text-sm font-semibold text-secondary text-right flex-shrink-0">${p.name}</div>
+                    <div class="relative flex-grow h-full">
+                        ${triangle}
+                        ${dot}
+                    </div>
+                </div>`;
+        }).join('');
+
+        const legend = `
+            <div class="mb-6 flex items-center justify-center gap-6 text-sm text-secondary">
+                <div class="flex items-center gap-2">
+                    <div class="triangle border-b-blue-500"></div>
+                    <span>Liberação para o Cliente</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span>Fim do Projeto</span>
+                </div>
+            </div>
+        `;
+
+        return `
+            ${legend}
+            <div class="overflow-x-auto">
+                <div class="min-w-[1200px]">
+                    <div class="flex">
+                        <div class="w-48 flex-shrink-0 pr-4"></div>
+                        <div class="flex-grow flex">${monthMarkers()}</div>
+                    </div>
+                     <div class="flex">
+                        <div class="w-48 flex-shrink-0 pr-4"></div>
+                        <div class="relative flex-grow h-6">${dateMarkers}</div>
+                    </div>
+                    <div class="flex flex-col">${projectRows}</div>
+                </div>
+            </div>
+            `;
+    }
+    
+    function renderGanttChart(cronograma) {
+        if (!cronograma || cronograma.length === 0) return '<p>Cronograma não disponível.</p>';
+
+        return cronograma.map(item => {
+            if (!item.inicio || !item.fim) {
+                return `
+                    <div class="mb-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <p class="text-sm font-medium text-main">${item.etapa || 'Etapa não definida'}</p>
+                            <p class="text-xs font-mono text-white font-bold">${item.checklist || 'A definir'}</p>
+                        </div>
+                        <div class="w-full h-6 gantt-bar-bg rounded"></div>
+                    </div>`;
+            }
+
+            const start = luxon.DateTime.fromISO(item.inicio);
+            const end = luxon.DateTime.fromISO(item.fim);
+            const now = luxon.DateTime.now();
+            const status = item.checklist?.toLowerCase() || '';
+            
+            let progressPercent = 0;
+            let color = 'bg-slate-400';
+
+            if (status.includes('concluido') || status.includes('finalizado')) {
+                progressPercent = 100;
+                color = 'bg-emerald-500';
+            } else if (status.includes('andamento') || status.includes('iniciado')) {
+                const totalDuration = end.diff(start, 'days').days;
+                const elapsedDuration = now.diff(start, 'days').days;
+                
+                if (totalDuration > 0) {
+                    progressPercent = Math.min(100, Math.max(0, (elapsedDuration / totalDuration) * 100));
+                } else {
+                    progressPercent = (now >= start) ? 100 : 0;
+                }
+                
+                color = 'bg-sky-500';
+                if (now.startOf('day') > end) {
+                    color = 'bg-red-500';
+                }
+            } else { // Not started
+                progressPercent = 0;
+                color = 'bg-slate-400';
+                 if (now.startOf('day') > end) {
+                    color = 'bg-red-500';
+                }
+            }
+            
+            return `
+                <div class="mb-2">
+                    <div class="flex justify-between items-center mb-1">
+                        <p class="text-sm font-medium text-main">${item.etapa}</p>
+                        <p class="text-xs font-mono text-white font-bold">${start.toFormat('dd/MM/yy')} - ${end.toFormat('dd/MM/yy')}</p>
+                    </div>
+                    <div class="w-full h-6 gantt-bar-bg rounded">
+                        <div class="gantt-bar ${color}" style="width: ${progressPercent}%;" title="${item.etapa}: ${start.toFormat('dd/MM')} - ${end.toFormat('dd/MM')}"></div>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+    
+    function renderFinancialChart(chartId, chartDataSource) {
+        const ctx = document.getElementById(chartId);
+        if (!ctx) return;
+        
+        const existingChart = Chart.getChart(chartId);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+
+        const data = {
+            labels: chartDataSource.labels,
+            datasets: [{
+                label: 'Faturamento Projetado (R$)',
+                data: chartDataSource.data,
+                backgroundColor: 'rgba(56, 189, 248, 0.6)', // sky-400 com opacidade
+                borderColor: 'rgba(56, 189, 248, 1)', // sky-400
+                borderWidth: 1,
+                borderRadius: 4,
+            }]
+        };
+        new Chart(ctx, {
+            type: 'bar',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#94a3b8', // slate-400
+                            callback: function(value) {
+                                return 'R$ ' + value.toLocaleString('pt-BR');
+                            }
+                        },
+                        grid: {
+                            color: '#334155' // slate-700
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#94a3b8', // slate-400
+                        },
+                        grid: {
+                            color: '#334155' // slate-700
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function setupNavigation() {
+        function showPage(pageId, projectTargetId = null) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+
+            const pageToShow = document.getElementById(pageId);
+            const linkToActivate = document.querySelector(`a[href="#${pageId}"]`);
+            
+            const themeToggleContainer = document.getElementById('theme-toggle-container');
+            if (pageId === 'overview') {
+                themeToggleContainer.style.display = 'flex';
+            } else {
+                themeToggleContainer.style.display = 'none';
+            }
+
+            if (pageToShow) {
+                pageToShow.classList.add('active');
+                if (pageId === 'financeiro-inclusao') {
+                    renderFinancialChart('financialChartInclusao', inclusaoChartData);
+                } else if (pageId === 'projecao-implantacao') {
+                    renderFinancialChart('financialChartImplantacao', implantacaoChartData);
+                }
+            }
+            if (linkToActivate) linkToActivate.classList.add('active');
+
+            if (projectTargetId) {
+                setTimeout(() => {
+                    const targetTabButton = pageToShow.querySelector(`[data-target="${projectTargetId}"]`);
+                    if (targetTabButton) {
+                        targetTabButton.click();
+                    }
+                }, 0);
+            }
+        }
+
+        const handleNavClick = (e) => {
+            const link = e.target.closest('a[href^="#"]');
+            const cityCard = e.target.closest('.city-card[data-href]');
+
+            if (link) {
+                e.preventDefault();
+                const pageId = link.getAttribute('href').substring(1);
+                const projectTarget = link.dataset.projectTarget;
+
+                if (window.location.hash !== `#${pageId}`) {
+                    history.pushState({ pageId, projectTarget }, '', `#${pageId}`);
+                }
+                showPage(pageId, projectTarget);
+                
+                if (window.innerWidth < 1024) {
+                    toggleSidebar();
+                }
+            } else if (cityCard) {
+                 e.preventDefault();
+                const pageId = cityCard.dataset.href.substring(1);
+                if (window.location.hash !== `#${pageId}`) {
+                    history.pushState({ pageId, projectTarget: null }, '', `#${pageId}`);
+                }
+                showPage(pageId, null);
+            }
+        };
+
+        navMenu.addEventListener('click', handleNavClick);
+        pageContainer.addEventListener('click', handleNavClick);
+
+        window.addEventListener('popstate', (e) => {
+            const pageId = e.state ? e.state.pageId : 'overview';
+            const projectTarget = e.state ? e.state.projectTarget : null;
+            showPage(pageId, projectTarget);
+        });
+
+        const initialPage = window.location.hash.replace('#', '') || 'overview';
+        showPage(initialPage);
+    }
+
+    function init() {
+        renderSidebar();
+        renderPages();
+        setupNavigation();
+        updateThemeIcons();
+    }
+
+    init();
+});
+</script>
+</body>
+</html>

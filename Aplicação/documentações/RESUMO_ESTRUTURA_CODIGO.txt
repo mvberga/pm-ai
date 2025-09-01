@@ -1,0 +1,140 @@
+PM AI MVP - Resumo Essencial da Estrutura do Código
+Data: 2025-08-29
+
+Objetivo
+- Este documento resume a arquitetura atual (frontend, backend, banco) para apoiar o estudo de adequação com 3 arquivos HTML externos (v1 de layout). Ele destaca as estruturas de dados, endpoints e fluxos, para mapear dados esperados no HTML versus o que o sistema oferece hoje e quais processos do backend conduzem a lógica.
+
+1) Estrutura de Diretórios (alto nível)
+- Aplicação/
+  - backend/ (FastAPI + SQLAlchemy)
+  - frontend/ (React + Vite)
+  - db/init/01_init.sql (DDL e dados seed)
+  - docker-compose.yml (db, backend, frontend; cypress opcional via profile)
+
+2) Banco de Dados (tabelas e campos principais)
+- users
+  - id (PK), email (unique, index), name, created_at
+
+- projects
+  - id (PK), name, description
+  - municipio, entidade
+  - chamado_jira
+  - portfolio, vertical, product, tipo (enum: implantacao, migracao, configuracao, treinamento, suporte)
+  - data_inicio, data_fim, etapa_atual
+  - valor_implantacao (float), valor_recorrente (float)
+  - status (enum: not_started, on_track, warning, delayed, completed)
+  - recursos (int)
+  - gerente_projeto_id (FK users), gerente_portfolio_id (FK users), owner_id (FK users)
+  - created_at, updated_at
+
+- project_members
+  - id (PK), project_id (FK), user_id (FK), role
+
+- project_implantadores
+  - id (PK), project_id (FK), user_id (FK), role
+
+- project_migradores
+  - id (PK), project_id (FK), user_id (FK), role
+
+- project_tasks
+  - id (PK), project_id (FK), name, description, start_date, end_date, status, assignee_id (FK users)
+
+- checklist_groups
+  - id (PK), project_id (FK), name, created_at
+
+- checklist_items
+  - id (PK), group_id (FK), title, type ('Ação'|'Documentação'), notes, is_done, created_at
+
+- action_items
+  - id (PK), project_id (FK), title, type ('Ação Pontual'|'Pendência'|'Chamado'|'Bug'), assignee_id (FK users), due_date, status, description, priority, created_at
+
+Observações de modelagem
+- Índices em campos de filtro frequentes (municipio, status, portfolio, vertical) conforme 01_init.sql.
+- Cascata ON DELETE em relacionamentos auxiliares (membros, implantadores, migradores, tarefas, itens de checklist) para limpeza coerente por projeto.
+
+3) Backend (FastAPI) - Principais Endpoints
+- /api/v1/projects [GET]
+  - Filtros: municipio, portfolio, vertical, status, gerente_projeto_id
+  - Retorna lista de projetos
+- /api/v1/projects/metrics [GET]
+  - Totais: projetos, implantação, recorrente, recursos; breakdown por status/município/portfólio
+- /api/v1/projects [POST]
+  - Cria projeto (payload ProjectIn)
+- /api/v1/projects/{id} [GET|PUT|DELETE]
+  - CRUD de projeto
+- /api/v1/projects/{id}/tasks [GET|POST]
+  - Lista/cria tarefas de um projeto
+- /api/v1/projects/{id}/implantadores [GET|POST]
+- /api/v1/projects/{id}/migradores [GET|POST]
+
+- /api/v1/checklists [GET|POST]
+  - Lista/cria grupos de checklist (ChecklistGroup)
+- /api/v1/checklists/{id} [GET]
+
+- /api/v1/action-items [GET|POST]
+- /api/v1/action-items/{id} [GET]
+
+- /api/v1/auth/google/login [POST]
+  - Cria/recupera usuário e retorna JWT (stub para MVP)
+
+Locks e consistência
+- Operações de escrita usam locks por aplicativo (request.app.state.*) para reduzir condições de corrida no MVP.
+
+4) Frontend (React)
+- Páginas: ProjectsList.jsx, ProjectDetail.jsx
+- Componentes: Checklist.jsx, ActionItems.jsx, dashboard/PortfolioOverview.tsx
+- API client: src/api/client.js (axios baseURL VITE_API_URL)
+- Tipos: src/types/portfolio.ts
+
+Fluxos chave
+- Dashboard PortfolioOverview
+  - Chama GET /projects/metrics e GET /projects
+  - Exibe KPIs (totais), cartões por status, agrupamento por município e tabela completa
+- Lista de Projetos (ProjectsList)
+  - Chama GET /projects (com filtros opcionais via query params)
+- Detalhe do Projeto (ProjectDetail)
+  - Tabs: Checklist e Central de Ações
+  - Checklist: integra com /checklists e /checklist-groups (grupo/itens)
+  - Action Items: integra com /projects/{id}/action-items e POST/GET relacionados
+
+5) Mapeamento para os HTMLs externos (v1 de layout)
+- Tabelas e cards de KPIs
+  - Dados vêm de /projects/metrics e /projects
+  - Campos: total_projects, total_implantation, total_recurring, total_resources; status breakdown; agrupamentos por município/portfólio
+- Tabelas de projetos e detalhes
+  - Baseadas em fields de projects: name, municipio, status (com tradução e cor), etapa_atual, valores (implantação/recorrente), recursos, portfolio, vertical
+- Checklist e Ações
+  - Tabelas/listas para grupos/itens (checklist_groups/checklist_items) e action_items
+
+Convergências esperadas com HTMLs v1
+- Se os HTMLs esperam colunas adicionais (ex.: responsável nominal, produto detalhado, etapas custom), os campos existem ou podem ser mapeados (ex.: gerente_projeto_id→User.name via join).
+- Para badges/status, frontend já traduz enums: not_started, on_track, warning, delayed, completed.
+
+6) Gaps e pontos de atenção
+- Autenticação está stub (google/login sem validação real do id_token)
+- Regras de permissão/visibilidade por usuário não estão definidas em endpoints de listagem
+- Agregações avançadas (por vertical/portfólio com filtros combinados) podem demandar queries adicionais
+- Histórico/auditoria (quem alterou, quando) não está modelado além de created_at/updated_at
+
+7) Como usar este resumo para o estudo com HTMLs
+- Passo 1: Identificar, para cada tabela/visual do HTML, quais campos e filtros são esperados
+- Passo 2: Cruzar com os campos de projects, tasks, checklist, action_items e users listados acima
+- Passo 3: Se algum campo não existir:
+  - Verificar se é derivável (ex.: nome do gerente via join User)
+  - Propor campo novo no modelo (e migração)
+  - Propor endpoint/rota de agregação específica
+- Passo 4: Validar formatos de dados e internacionalização (números, datas) frente ao esperado no HTML
+- Passo 5: Confirmar processos backend que alimentarão as visões (ex.: criação/atualização de projetos, inserção de tasks, status)
+
+8) Execução local (referência rápida)
+- Docker Compose: db (Postgres), backend (FastAPI), frontend (Vite preview)
+- Variáveis: VITE_API_URL (frontend) aponta para backend; endpoints em /api/v1
+- E2E (opcional): Cypress via profile `e2e`
+
+9) Próximos passos sugeridos
+- Definir contrato de dados alvo a partir dos 3 HTMLs
+- Documentar mapeamento campo-a-campo para cada visual HTML
+- Estender endpoints/queries conforme lacunas identificadas
+- Introduzir autenticação real e autorizações, se necessário
+
+

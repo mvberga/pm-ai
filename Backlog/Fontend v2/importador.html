@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Gerenciamento do Projeto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+        }
+        .large-chart-container {
+             position: relative;
+            width: 100%;
+            height: 400px;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+        .kanban-card {
+            cursor: grab;
+        }
+        .kanban-column .kanban-card.dragging {
+            opacity: 0.5;
+        }
+        /* Fix for dark theme in Chrome */
+        .dark input, .dark select, .dark textarea {
+            background-color: #334155; /* slate-700 */
+            color: #f1f5f9; /* slate-100 */
+            border-color: #475569; /* slate-600 */
+        }
+        .dark input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        /* Estilos para as abas dos produtos */
+        .product-tab {
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: background-color: 0.2s;
+        }
+        .product-tab:hover {
+            background-color: #475569; /* slate-600 */
+        }
+        .product-tab.active {
+            background-color: #0761FF; /* betha-blue */
+            color: #ffffff;
+            font-weight: 600;
+        }
+         /* Estilos para as abas de Próximos Passos */
+        .next-steps-tab {
+            cursor: pointer;
+            padding: 8px 16px;
+            margin-bottom: -1px; /* Overlap border */
+            border: 1px solid transparent;
+            border-bottom: none;
+            transition: background-color: 0.2s, border-color: 0.2s;
+        }
+        .next-steps-tab.active {
+            border-color: #475569; /* slate-600 */
+            background-color: #1e293b; /* slate-800 */
+            border-radius: 6px 6px 0 0;
+            color: #0761FF; /* betha-blue */
+            font-weight: 600;
+        }
+        /* Spinner */
+        .loader {
+            border: 4px solid #475569;
+            border-left-color: #0761FF;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200">
+    
+    <!-- Importer Screen -->
+    <div id="importer-screen" class="flex flex-col items-center justify-center min-h-screen p-4">
+        <div class="text-center">
+            <img src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' rx='20' fill='%230761FF'/%3e%3ctext x='50' y='55' font-family='Inter, sans-serif' font-size='75' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'%3eB%3c/text%3e%3c/svg%3e" alt="Betha Logo" class="w-20 h-20 mx-auto rounded-2xl">
+            <h1 class="text-3xl font-bold text-white mt-6">Dashboard de Gerenciamento de Projetos</h1>
+            <p class="text-slate-400 mt-2">Importe sua planilha de projeto para começar.</p>
+        </div>
+
+        <div id="drop-zone" class="mt-10 w-full max-w-lg p-10 border-2 border-dashed border-slate-600 rounded-lg text-center cursor-pointer hover:border-[#0761FF] hover:bg-slate-800 transition-colors">
+            <svg class="mx-auto h-12 w-12 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <p class="mt-4 text-slate-300">Arraste e solte sua planilha aqui</p>
+            <p class="text-xs text-slate-500 mt-1">ou</p>
+            <button type="button" class="mt-2 text-sm font-semibold text-[#0761FF] hover:text-[#3a86ff]">Clique para selecionar o arquivo</button>
+            <input type="file" id="file-input" class="hidden" accept=".xlsx, .xls">
+        </div>
+
+        <div id="loading-container" class="hidden mt-8 text-center">
+            <div class="loader mx-auto"></div>
+            <p id="import-status" class="mt-4 text-slate-400">Processando arquivo...</p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Container (hidden by default) -->
+    <div id="dashboard-container" class="flex min-h-screen hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-slate-900 shadow-lg flex-shrink-0 flex flex-col">
+            <div class="p-6 flex items-center border-b border-slate-700">
+                <img src="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3crect width='100' height='100' rx='20' fill='%230761FF'/%3e%3ctext x='50' y='55' font-family='Inter, sans-serif' font-size='75' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'%3eB%3c/text%3e%3c/svg%3e" alt="Betha Logo" class="w-10 h-10 mr-3 rounded">
+                <div class="flex flex-col">
+                    <span class="text-white font-bold text-lg">Betha Sistemas</span>
+                    <span class="text-sm text-slate-400">Gerenciamento</span>
+                </div>
+            </div>
+            <nav id="main-nav" class="mt-6 flex-grow">
+                <a href="#overview" class="nav-link flex items-center px-6 py-3 text-white hover:bg-[#0761FF] bg-[#0761FF] font-semibold">
+                    <span class="mr-3">📊</span> Visão Geral
+                </a>
+                 <a href="#team" class="nav-link flex items-center px-6 py-3 text-white hover:bg-[#0761FF]">
+                    <span class="mr-3">👥</span> Equipe do Projeto
+                </a>
+                <a href="#client-data" class="nav-link flex items-center px-6 py-3 text-white hover:bg-[#0761FF]">
+                    <span class="mr-3">👤</span> Dados do Cliente
+                </a>
+                <a href="#produtos" class="nav-link flex items-center px-6 py-3 text-white hover:bg-[#0761FF]">
+                    <span class="mr-3">📦</span> Produtos Contratados
+                </a>
+                <a href="#timeline" class="nav-link flex items-center px-6 py-3 text-white hover:bg-[#0761FF]">
+                    <span class="mr-3">⏳</span> Cronograma
+                </a>
+                <a href="#kanban" class="nav-link flex items-center px-6 py-3 text-white hover:bg-[#0761FF]">
+                    <span class="mr-3">🗂️</span> Kanban
+                </a>
+                 <div id="verticals-nav-links">
+                      <!-- Links das verticais serão inseridos aqui dinamicamente -->
+                 </div>
+                <a href="#risks" class="nav-link flex items-center px-6 py-3 text-white hover:bg-[#0761FF]">
+                    <span class="mr-3">⚠️</span> Gestão de Riscos
+                </a>
+                <a href="#lessons" class="nav-link flex items-center px-6 py-3 text-white hover:bg-[#0761FF]">
+                    <span class="mr-3">💡</span> Lições Aprendidas
+                </a>
+                <a href="#next-steps" class="nav-link flex items-center px-6 py-3 text-white hover:bg-[#0761FF]">
+                    <span class="mr-3">🚀</span> Próximos Passos
+                </a>
+                <a href="#export" class="nav-link flex items-center px-6 py-3 text-white hover:bg-[#0761FF]">
+                    <span class="mr-3">📄</span> Extração
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 sm:p-8 md:p-10 bg-slate-900 overflow-y-auto">
+            
+            <!-- Overview Section -->
+            <section id="overview" class="content-section active">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="project-title" class="text-3xl font-bold text-slate-50"></h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-slate-400">Gerente do Projeto</h3>
+                        <p id="manager-name" class="text-2xl font-bold text-slate-200 mt-2"></p>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-slate-400">Valor do Projeto</h3>
+                        <p id="project-value" class="text-2xl font-bold text-slate-200 mt-2"></p>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-slate-400">Prazo Final</h3>
+                        <p id="project-deadline" class="text-3xl font-bold text-[#0761FF] mt-2"></p>
+                    </div>
+                     <div id="status-light-card" class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-slate-400">Farol de Status</h3>
+                        <div class="flex items-center mt-2">
+                            <span id="status-light-indicator" class="w-4 h-4 rounded-full mr-2"></span>
+                            <p id="status-light-text" class="text-2xl font-bold text-slate-200"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-center text-slate-50 mb-4">Status dos Marcos</h3>
+                        <div class="chart-container">
+                            <canvas id="milestoneProgressChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-center text-slate-50 mb-4">Conclusão por Vertical (%)</h3>
+                        <div class="chart-container">
+                            <canvas id="verticalsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-slate-50 mb-4">Marcos do Projeto (Concluído)</h3>
+                        <div id="milestones-checklist" class="space-y-2">
+                        </div>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold text-slate-50 mb-4">Documentos Chave</h3>
+                        <div id="documents-checklist" class="space-y-2">
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+             <!-- Team Section -->
+            <section id="team" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-50 mb-6">Equipe do Projeto</h2>
+                <div id="team-container" class="bg-slate-800 p-6 rounded-lg shadow-sm"></div>
+            </section>
+
+            <!-- Client Data Section -->
+            <section id="client-data" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-50 mb-6">Dados do Cliente e Plano de Comunicação</h2>
+                <div id="client-data-container" class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                </div>
+            </section>
+            
+            <!-- Produtos Contratados Section -->
+            <section id="produtos" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-50 mb-6">Produtos Contratados</h2>
+                <p class="mb-8 text-slate-400 max-w-3xl">Relação de produtos e chamados de implantação por vertical.</p>
+                <div id="produtos-container" class="bg-slate-800 p-6 rounded-lg shadow-sm"></div>
+            </section>
+
+
+            <!-- Timeline Section -->
+            <section id="timeline" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-50 mb-6">Linha do Tempo do Projeto</h2>
+                <p class="mb-8 text-slate-400 max-w-3xl">Esta seção oferece uma visão detalhada do progresso de cada atividade do cronograma.</p>
+                
+                <div class="bg-slate-800 p-6 rounded-lg shadow-sm mb-8">
+                    <h3 class="text-xl font-bold text-slate-50 mb-4">Progresso das Atividades</h3>
+                    <div class="overflow-x-auto">
+                        <div id="timeline-container" class="min-w-[800px]"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Kanban Section -->
+            <section id="kanban" class="content-section">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-slate-50">Kanban por Verticais</h2>
+                </div>
+                <p class="mb-8 text-slate-400 max-w-3xl">Arraste e solte os cards para organizar o status de cada vertical. Esta visão é independente do cronograma principal.</p>
+                
+                <div id="kanban-board" class="flex overflow-x-auto space-x-4 pb-4">
+                </div>
+            </section>
+
+            <!-- Container para seções de verticais dinâmicas -->
+            <div id="verticals-sections-container"></div>
+
+            <!-- Risks Section -->
+            <section id="risks" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-50 mb-6">Gestão de Riscos</h2>
+                <p class="mb-8 text-slate-400 max-w-3xl">O gerenciamento proativo de riscos é essencial. Aqui, visualizamos a distribuição dos riscos por prioridade e origem através de gráficos interativos. A tabela detalhada abaixo permite filtrar e analisar cada risco individualmente para um acompanhamento preciso.</p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-center text-slate-50 mb-4">Riscos por Prioridade</h3>
+                        <div class="chart-container">
+                            <canvas id="priorityChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-center text-slate-50 mb-4">Riscos por Origem</h3>
+                        <div class="chart-container">
+                            <canvas id="originChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between mb-4 gap-4">
+                        <h3 class="text-xl font-bold text-slate-50">Lista de Riscos</h3>
+                        <div class="flex items-center gap-4">
+                            <select id="priorityFilter" class="p-2 border rounded-md bg-slate-700 border-slate-600 shadow-sm">
+                                <option value="all">Toda Prioridade</option>
+                            </select>
+                            <select id="statusFilter" class="p-2 border rounded-md bg-slate-700 border-slate-600 shadow-sm">
+                                <option value="all">Todo Status</option>
+                            </select>
+                        </div>
+                        <button id="generate-action-btn" class="bg-[#0761FF] text-white px-4 py-2 rounded-lg hover:bg-[#054ed9] transition-colors">✨ Gerar Ação para Risco</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-700">
+                            <thead class="bg-slate-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Resumo do Risco</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Prioridade</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="risks-table-body" class="bg-slate-800 divide-y divide-slate-700">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="mitigation-action-box" class="mt-4 p-4 bg-slate-700 rounded-lg hidden">
+                        <h4 class="font-bold text-slate-200">Plano de Ação Sugerido:</h4>
+                        <p id="mitigation-action-text" class="mt-2 text-slate-400"></p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Lessons Learned Section -->
+            <section id="lessons" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-50 mb-6">Lições Aprendidas</h2>
+                <p class="mb-8 text-slate-400 max-w-3xl">Registre os aprendizados do projeto para consulta e melhoria contínua em futuras implantações.</p>
+                
+                <div class="bg-slate-800 p-6 rounded-lg shadow-sm mb-8">
+                    <h3 class="text-xl font-bold text-slate-50 mb-4">Adicionar Nova Lição</h3>
+                    <div class="space-y-4">
+                         <input type="text" id="lesson-input" placeholder="Descreva a lição aprendida" class="p-2 border rounded-md w-full bg-transparent border-slate-600 focus:ring-[#0761FF] focus:border-[#0761FF]">
+                         <input type="text" id="lesson-context" placeholder="Contexto/Fase do projeto" class="p-2 border rounded-md w-full bg-transparent border-slate-600 focus:ring-[#0761FF] focus:border-[#0761FF]">
+                         <textarea id="lesson-resolution-input" placeholder="Descreva a resolução ou ação tomada" class="p-2 border rounded-md w-full bg-transparent border-slate-600 focus:ring-[#0761FF] focus:border-[#0761FF]" rows="3"></textarea>
+                         <select id="lesson-category" class="p-2 border rounded-md w-full bg-slate-700 border-slate-600">
+                            <option value="Positivo">Positivo</option>
+                            <option value="Negativo">Negativo</option>
+                            <option value="Melhoria">Ponto de Melhoria</option>
+                        </select>
+                    </div>
+                    <button id="add-lesson-btn" class="mt-4 bg-[#0761FF] text-white px-4 py-2 rounded-lg hover:bg-[#054ed9] transition-colors">Adicionar Lição</button>
+                </div>
+
+                <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                    <h3 class="text-xl font-bold text-slate-50 mb-4">Lista de Lições</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-700">
+                            <thead class="bg-slate-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-1/3">Lição</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-1/3">Resolução</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Contexto/Fase</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Categoria</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lessons-table-body" class="bg-slate-800 divide-y divide-slate-700">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+             <!-- Next Steps Section -->
+            <section id="next-steps" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-50 mb-6">Próximos Passos</h2>
+                <p class="mb-8 text-slate-400 max-w-3xl">Defina e acompanhe as próximas ações para garantir o progresso contínuo do projeto.</p>
+                
+                <div class="bg-slate-800 p-6 rounded-lg shadow-sm mb-8">
+                    <h3 class="text-xl font-bold text-slate-50 mb-4">Adicionar Próximo Passo</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <div class="md:col-span-3">
+                            <label for="next-step-input" class="block text-sm font-medium text-slate-300">Descrição</label>
+                            <input type="text" id="next-step-input" placeholder="Descreva a ação" class="mt-1 p-2 border rounded-md w-full bg-transparent border-slate-600 focus:ring-[#0761FF] focus:border-[#0761FF]">
+                        </div>
+                        <div>
+                             <label for="next-step-responsible" class="block text-sm font-medium text-slate-300">Responsável</label>
+                            <input type="text" id="next-step-responsible" placeholder="Nome do responsável" class="mt-1 p-2 border rounded-md w-full bg-transparent border-slate-600 focus:ring-[#0761FF] focus:border-[#0761FF]">
+                        </div>
+                        <div>
+                            <label for="next-step-date" class="block text-sm font-medium text-slate-300">Data</label>
+                            <input type="date" id="next-step-date" class="mt-1 p-2 border rounded-md w-full bg-transparent border-slate-600 focus:ring-[#0761FF] focus:border-[#0761FF] dark:[color-scheme:dark]">
+                        </div>
+                        <button id="add-next-step-btn" class="bg-[#0761FF] text-white px-4 py-2 rounded-lg hover:bg-[#054ed9] transition-colors h-10">Adicionar Passo</button>
+                    </div>
+                </div>
+
+                <div id="next-steps-container" class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                   <!-- Conteúdo gerado via JS -->
+                </div>
+            </section>
+
+            <!-- Export Section -->
+            <section id="export" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-50 mb-6">Extração de Dados</h2>
+                <p class="mb-8 text-slate-400 max-w-3xl">Exporte os dados das seções "Lições Aprendidas" e "Próximos Passos" para um arquivo CSV para análise externa ou arquivamento.</p>
+                
+                <div class="bg-slate-800 p-6 rounded-lg shadow-sm">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <button id="export-lessons-btn" class="bg-emerald-500 text-white px-6 py-3 rounded-lg hover:bg-emerald-600 transition-colors w-full md:w-auto">
+                            Exportar Lições Aprendidas (CSV)
+                        </button>
+                        <button id="export-next-steps-btn" class="bg-emerald-500 text-white px-6 py-3 rounded-lg hover:bg-emerald-600 transition-colors w-full md:w-auto">
+                            Exportar Próximos Passos (CSV)
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+<script>
+    // --- VARIÁVEIS DE DADOS GLOBAIS ---
+    let priorityChartInstance, originChartInstance, milestoneProgressChartInstance, verticalsChartInstance;
+    let allVerticals = [];
+    let projectData = {};
+    let teamData = [];
+    let clientData = [];
+    let produtosContratados = [];
+    let timelineData = [];
+    let documentsData = [];
+    let produtosPorVertical = {};
+    let allRisks = [];
+    let lessonsLearnedData = JSON.parse(localStorage.getItem('lessonsLearnedData')) || [];
+    let nextStepsData = JSON.parse(localStorage.getItem('nextStepsData')) || [];
+    let verticalsKanbanStatus = JSON.parse(localStorage.getItem('verticalsKanbanStatus')) || {};
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        setupImporter();
+    });
+
+    // --- LÓGICA DO IMPORTADOR ---
+    function setupImporter() {
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const loadingContainer = document.getElementById('loading-container');
+        const importStatus = document.getElementById('import-status');
+
+        const triggerFileInput = () => fileInput.click();
+        
+        dropZone.addEventListener('click', triggerFileInput);
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('border-[#0761FF]', 'bg-slate-800');
+        });
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('border-[#0761FF]', 'bg-slate-800');
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('border-[#0761FF]', 'bg-slate-800');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            loadingContainer.classList.remove('hidden');
+            dropZone.classList.add('hidden');
+            importStatus.textContent = `Processando '${file.name}'...`;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // Processar cada aba da planilha
+                    processProjectSheet(workbook);
+                    processTeamSheet(workbook);
+                    processClientSheet(workbook);
+                    processProdutosSheet(workbook);
+                    processTimelineSheet(workbook);
+                    processDocumentsSheet(workbook);
+                    processRisksSheet(workbook);
+                    processVerticalSheets(workbook);
+                    setupVerticals();
+                    
+                    setTimeout(() => {
+                        launchDashboard();
+                    }, 1000);
+
+                } catch (error) {
+                    console.error("Erro ao processar a planilha:", error);
+                    importStatus.textContent = "Erro ao ler o arquivo. Verifique o formato.";
+                    importStatus.classList.add('text-red-500');
+                    loadingContainer.classList.remove('hidden');
+                    dropZone.classList.remove('hidden');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
+    // --- FUNÇÕES DE PROCESSAMENTO DA PLANILHA ---
+    function excelDateToJSDate(excelDate) {
+        if (typeof excelDate !== 'number') {
+            if(typeof excelDate === 'string' && excelDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return excelDate;
+            }
+            return null;
+        };
+        const date = new Date((excelDate - 25569) * 86400 * 1000);
+        const tzOffset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() + tzOffset).toISOString().split('T')[0];
+    }
+
+    function processProjectSheet(workbook) {
+        const sheet = workbook.Sheets['Dados Gerais'];
+        if (!sheet) {
+            console.error("Aba 'Dados Gerais' não encontrada.");
+            return;
+        }
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        const data = {};
+        rows.forEach(row => {
+            if (row.length >= 2 && row[0] && row[1]) {
+                const key = row[0].toString().trim();
+                const value = row[1].toString().trim();
+                if (!data[key]) {
+                    data[key] = value;
+                }
+            }
+        });
+
+        const projectValueRaw = data['Valor do projeto'] || data['Valor do Projeto'] || 0;
+        projectData = {
+            projectName: data['Nome do Projeto'],
+            projectManager: data['Gerente do Projeto'],
+            projectValue: parseFloat(projectValueRaw).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+        };
+    }
+
+    function processTeamSheet(workbook) {
+        const sheet = workbook.Sheets['Equipe do projeto'];
+        if (!sheet) {
+            console.error("Aba 'Equipe do projeto' não encontrada.");
+            return;
+        }
+        const data = XLSX.utils.sheet_to_json(sheet);
+        teamData = data.map(row => {
+            let vertical = row['Vertical'] || row['Vertial'] || '';
+            if (vertical.toLowerCase().startsWith('cont') || vertical.toLowerCase().startsWith('cnt')) {
+                 if (vertical.toLowerCase().includes('contrat')) {
+                     vertical = 'Contratos';
+                 } else {
+                     vertical = 'Contábil';
+                 }
+            }
+            return {
+                nome: row['Nome'],
+                vertical: vertical,
+                responsabilidade: row['Responsabilidade']
+            }
+        });
+    }
+    
+    function processClientSheet(workbook) {
+        const sheet = workbook.Sheets['Dados Cliente'];
+        if (!sheet) {
+             console.error("Aba 'Dados Cliente' não encontrada.");
+            return;
+        }
+        const data = XLSX.utils.sheet_to_json(sheet);
+        clientData = data.map(row => ({
+            'Atuação': row['Atuação'],
+            'Nome': row['Nome'],
+            'Email': row['Email'] || 'nao.informado@cliente.com',
+            'Telefone': row['Telefone'],
+            'NivelDeComunicacao': row['Comunicação'],
+            'Rotina': row['Rotina'] || 'Semanal'
+        }));
+    }
+    
+    function processProdutosSheet(workbook) {
+        const sheet = workbook.Sheets['Produto Contratado'];
+        if (!sheet) {
+            console.error("Aba 'Produto Contratado' não encontrada.");
+            return;
+        }
+        produtosContratados = XLSX.utils.sheet_to_json(sheet).map(row => ({
+            vertical: row['Vertical'],
+            produto: row['Produto'],
+            entidade: row['Entidade'],
+            chamado: row['Chamado'] || row['Chamado de Implantação']
+        }));
+    }
+
+    function processTimelineSheet(workbook) {
+        const sheet = workbook.Sheets['Cronograma Macro'];
+        if (!sheet) {
+            console.error("Aba 'Cronograma Macro' não encontrada.");
+            return;
+        }
+        const data = XLSX.utils.sheet_to_json(sheet);
+        timelineData = data.map((row, index) => ({
+            id: row['ID'] || (index + 1),
+            title: row['Etapa'] || row['Atividade'],
+            startDate: excelDateToJSDate(row['Data Inicio'] || row['Data de Início']),
+            endDate: excelDateToJSDate(row['Data Fim'] || row['Data de Fim']),
+            status: row['Situação'] || row['Status']
+        }));
+    }
+    
+    function processDocumentsSheet(workbook) {
+        const sheet = workbook.Sheets['Documentos chaves'];
+        if (!sheet) {
+            console.error("Aba 'Documentos chaves' não encontrada.");
+            return;
+        }
+        const data = XLSX.utils.sheet_to_json(sheet);
+        documentsData = data.map(row => ({
+            name: row['Documento'] || row['Nome'],
+            status: row['Situação'] || row['Status'],
+            link: row['Link']
+        }));
+    }
+    
+    function processRisksSheet(workbook) {
+        const sheet = workbook.Sheets['Riscos'];
+        if (!sheet) {
+            console.error("Aba 'Riscos' não encontrada.");
+            allRisks = [];
+            return;
+        }
+        const data = XLSX.utils.sheet_to_json(sheet);
+        allRisks = data.map((row, index) => ({
+            id: row['ID'] || row['Seq'] || (index + 1),
+            resumo: row['Resumo do Risco'] || row['Risco'],
+            prioridade: row['Prioridade'] || 'Moderada',
+            origem: row['Origem do risco'] || 'Não especificada',
+            status: row['Status'] || 'Em Aberto'
+        }));
+    }
+
+    function processVerticalSheets(workbook) {
+        produtosPorVertical = {}; 
+
+        const verticalSheetMapping = {
+            'arrecadacao': 'Vertical - Arrecadação',
+            'pessoal': 'Vertical - Pessoal',
+            'compras': 'Vertical - ComprasContratos',
+            'contabil': 'Vertical - Contabil'
+        };
+
+        for (const verticalKey in verticalSheetMapping) {
+            const sheetName = verticalSheetMapping[verticalKey];
+            const sheet = workbook.Sheets[sheetName];
+
+            if (sheet) {
+                const data = XLSX.utils.sheet_to_json(sheet);
+                const productsInVertical = {};
+
+                data.forEach(row => {
+                    const productName = row['Produto'] || row['Vertical'];
+                    const task = row['Etapa'] || row['Rotinas'];
+                    const header = row['Modulo'];
+
+                    if (!productName || !task) return; 
+
+                    if (!productsInVertical[productName]) {
+                        productsInVertical[productName] = { name: productName, tasks: [], lastHeader: null };
+                    }
+
+                    if (header && header !== productsInVertical[productName].lastHeader) {
+                        productsInVertical[productName].tasks.push(header.toUpperCase());
+                        productsInVertical[productName].lastHeader = header;
+                    }
+                    
+                    productsInVertical[productName].tasks.push(task);
+                });
+
+                produtosPorVertical[verticalKey] = Object.values(productsInVertical);
+            } else {
+                console.warn(`Aba da vertical '${sheetName}' não encontrada.`);
+            }
+        }
+    }
+    
+    function setupVerticals() {
+        allVerticals = [];
+        const verticalDefinitions = {
+            'arrecadacao': { key: 'arrecadacao', name: 'Arrecadação', color: 'bg-sky-500', icon: '💰' },
+            'pessoal': { key: 'pessoal', name: 'Pessoal', color: 'bg-emerald-500', icon: '👥' },
+            'compras': { key: 'compras', name: 'Compras', color: 'bg-amber-500', icon: '🛒' },
+            'contabil': { key: 'contabil', name: 'Contábil', color: 'bg-purple-500', icon: '🧾' }
+        };
+
+        for (const verticalKey in produtosPorVertical) {
+            if (verticalDefinitions[verticalKey]) {
+                allVerticals.push(verticalDefinitions[verticalKey]);
+            }
+        }
+    }
+
+
+    // --- INICIALIZAÇÃO DO DASHBOARD ---
+    function launchDashboard() {
+        document.getElementById('importer-screen').classList.add('hidden');
+        document.getElementById('dashboard-container').classList.remove('hidden');
+        
+        initializeApp();
+        setChartTheme();
+        setupLessonsLearned();
+        setupNextSteps();
+        setupExportButtons();
+        initCharts();
+        setupNavigation();
+    }
+    
+    function initializeApp() {
+        fullRender();
+    }
+
+    // --- LÓGICA DE RENDERIZAÇÃO COMPLETA ---
+    function fullRender() {
+        populateGeneralInfo();
+        renderTeam();
+        renderClientData();
+        renderProdutosContratados();
+        renderChecklists();
+        
+        const verticalsNavContainer = document.getElementById('verticals-nav-links');
+        const verticalsSectionsContainer = document.getElementById('verticals-sections-container');
+        verticalsNavContainer.innerHTML = '';
+        verticalsSectionsContainer.innerHTML = '';
+
+        allVerticals.forEach(v => {
+            const link = document.createElement('a');
+            link.href = `#vertical-${v.key}`;
+            link.className = 'nav-link flex items-center px-6 py-3 text-white hover:bg-[#0761FF]';
+            link.innerHTML = `<span class="mr-3">${v.icon}</span> Vertical ${v.name}`;
+            verticalsNavContainer.appendChild(link);
+
+            const section = document.createElement('section');
+            section.id = `vertical-${v.key}`;
+            section.className = 'content-section';
+            section.innerHTML = `
+                <h2 class="text-3xl font-bold text-slate-50 mb-6">Checklist - Vertical ${v.name}</h2>
+                <p class="mb-8 text-slate-400 max-w-3xl">Acompanhamento das tarefas específicas da vertical de ${v.name}.</p>
+                <div id="${v.key}-checklist-container" class="bg-slate-800 p-6 rounded-lg shadow-sm"></div>
+            `;
+            verticalsSectionsContainer.appendChild(section);
+
+            renderVerticalProductPages(`${v.key}-checklist-container`, produtosPorVertical[v.key], v.key);
+        });
+
+        setupNavigation();
+        renderRisksTable(allRisks);
+        setupRiskFilters();
+        renderLessonsLearned(); 
+        renderNextSteps(); 
+        initCharts();
+        renderKanbanBoard();
+    }
+
+
+    // --- FUNÇÕES DE RENDERIZAÇÃO INDIVIDUAIS ---
+    function setChartTheme() {
+        const isDark = true; 
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+        const tickColor = isDark ? '#94a3b8' : '#475569';
+        const legendColor = isDark ? '#f8fafc' : '#1e293b';
+
+        Chart.defaults.color = legendColor;
+        Chart.defaults.borderColor = gridColor;
+        Chart.defaults.scale.ticks.color = tickColor;
+    }
+
+    function populateGeneralInfo() {
+        document.getElementById('project-title').textContent = projectData.projectName;
+        document.getElementById('manager-name').textContent = projectData.projectManager;
+        document.getElementById('project-value').textContent = projectData.projectValue;
+        const lastTask = timelineData[timelineData.length - 1];
+        if(lastTask && lastTask.endDate) {
+            document.getElementById('project-deadline').textContent = luxon.DateTime.fromISO(lastTask.endDate).toFormat('dd/MM/yyyy');
+        }
+    }
+
+    function renderTeam() {
+        const container = document.getElementById('team-container');
+        if (!container) return;
+        const table = `
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-700">
+                    <thead class="bg-slate-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Nome</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Vertical</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Responsabilidade</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-slate-800 divide-y divide-slate-700">
+                        ${teamData.map(member => `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-50">${member.nome}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${member.vertical}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${member.responsabilidade}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        container.innerHTML = table;
+    }
+
+    function renderClientData() {
+        const container = document.getElementById('client-data-container');
+        if (!container) return;
+        const table = `
+            <h3 class="text-xl font-bold text-slate-50 mb-4">Contatos e Comunicação</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-700">
+                    <thead class="bg-slate-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Atuação</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Nome</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Telefone</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Nível de Comunicação</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Rotina de Comunicação</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-slate-800 divide-y divide-slate-700">
+                        ${clientData.map(contact => `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-50">${contact['Atuação']}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${contact['Nome']}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${contact['Email']}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${contact['Telefone']}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${contact['NivelDeComunicacao']}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                                    <select class="p-1 border rounded-md text-sm bg-slate-700 border-slate-600">
+                                        <option value="Diaria" ${contact['Rotina'] === 'Diaria' ? 'selected' : ''}>Diária</option>
+                                        <option value="Semanal" ${contact['Rotina'] === 'Semanal' ? 'selected' : ''}>Semanal</option>
+                                        <option value="Quinzenal" ${contact['Rotina'] === 'Quinzenal' ? 'selected' : ''}>Quinzenal</option>
+                                        <option value="Mensal" ${contact['Rotina'] === 'Mensal' ? 'selected' : ''}>Mensal</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        container.innerHTML = table;
+    }
+
+    function renderProdutosContratados() {
+        const container = document.getElementById('produtos-container');
+        if (!container) return;
+        const table = `
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-700">
+                    <thead class="bg-slate-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Vertical</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Produto</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Entidade</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Chamado de Implantação</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-slate-800 divide-y divide-slate-700">
+                        ${produtosContratados.map(produto => `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-50">${produto.vertical}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${produto.produto}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${produto.entidade}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${produto.chamado}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        container.innerHTML = table;
+    }
+
+    function renderTimeline() {
+        const container = document.getElementById('timeline-container');
+        if (!container) return;
+        container.innerHTML = '';
+        container.classList.add('flex', 'flex-col', 'gap-2');
+        
+        const header = document.createElement('div');
+        header.className = 'flex items-center text-sm font-bold text-slate-300 bg-slate-700 p-2 rounded-t-lg';
+        header.innerHTML = `<div class="w-1/3">Atividade</div><div class="w-2/3">Progresso</div>`;
+        container.appendChild(header);
+
+        timelineData.forEach(item => {
+            const start = luxon.DateTime.fromISO(item.startDate);
+            const end = luxon.DateTime.fromISO(item.endDate);
+            const now = luxon.DateTime.now();
+            
+            const totalDuration = end.diff(start, 'days').days;
+            const elapsedDuration = now.diff(start, 'days').days;
+            
+            let progress = 0;
+            if (item.status && item.status.toLowerCase() === 'concluido') {
+                progress = 100;
+            } else if (now > start) {
+                progress = Math.max(0, Math.min(100, (elapsedDuration / totalDuration) * 100));
+            }
+
+            let barColor = 'bg-[#0761FF]'; // Em andamento
+            const daysRemaining = end.diff(now, 'days').days;
+
+            if (progress === 100) {
+                barColor = 'bg-emerald-500'; // Concluído
+            } else if (now > end) {
+                barColor = 'bg-red-500'; // Atrasado
+            } else if (daysRemaining <= 7) {
+                barColor = 'bg-yellow-500'; // Alerta
+            }
+
+            const row = document.createElement('div');
+            row.className = 'flex items-center h-12 border-b border-slate-700';
+            row.innerHTML = `
+                <div class="w-1/3 pr-4 text-sm">
+                    <div class="font-medium text-slate-300">${item.title}</div>
+                    <div class="text-xs text-slate-400">${start.toFormat('dd/MM/yy')} - ${end.toFormat('dd/MM/yy')}</div>
+                </div>
+                <div class="w-2/3 flex items-center">
+                    <div class="w-full bg-slate-700 rounded-full h-4">
+                        <div class="${barColor} h-4 rounded-full text-xs text-white text-center flex items-center justify-center" style="width: ${progress}%">
+                           ${progress.toFixed(0)}%
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    function setupNavigation() {
+        const allNavLinks = document.querySelectorAll('.nav-link');
+        const allContentSections = document.querySelectorAll('.content-section');
+        const initialHash = window.location.hash || '#overview';
+
+        const updateActiveState = (targetId) => {
+             allContentSections.forEach(section => {
+                section.classList.toggle('active', section.id === targetId);
+            });
+             allNavLinks.forEach(link => {
+                link.classList.toggle('bg-[#0761FF]', link.getAttribute('href') === `#${targetId}`);
+                link.classList.toggle('font-semibold', link.getAttribute('href') === `#${targetId}`);
+            });
+        }
+
+        allNavLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                history.pushState(null, null, `#${targetId}`);
+                updateActiveState(targetId);
+            });
+        });
+        
+        window.addEventListener('popstate', () => {
+            const targetId = window.location.hash.substring(1) || 'overview';
+            updateActiveState(targetId);
+        });
+
+        updateActiveState(initialHash.substring(1));
+    }
+    
+    function updateMilestoneChart() {
+        if (!milestoneProgressChartInstance) return;
+        const concluded = timelineData.filter(t => t.status && t.status.toLowerCase() === 'concluido').length;
+        const inProgress = timelineData.filter(t => t.status && t.status.toLowerCase() === 'em andamento').length;
+        const notStarted = timelineData.filter(t => t.status && (t.status.toLowerCase() === 'não iniciado' || t.status.toLowerCase() === 'nao iniciado')).length;
+        milestoneProgressChartInstance.data.datasets[0].data = [concluded, inProgress, notStarted];
+        milestoneProgressChartInstance.update();
+    }
+    
+    function updateVerticalsChart() {
+        if (!verticalsChartInstance) return;
+        
+        verticalsChartInstance.data.labels = allVerticals.map(v => v.name);
+
+        const percentages = allVerticals.map(vertical => {
+            const verticalKey = vertical.key;
+            const products = produtosPorVertical[verticalKey];
+            if (!products) return 0;
+            
+            let totalTasks = 0;
+            let completedTasks = 0;
+            
+            products.forEach(product => {
+                const productTasks = product.tasks.filter(task => task !== task.toUpperCase() || task.includes('('));
+                totalTasks += productTasks.length;
+
+                const productSlug = product.name.toLowerCase().replace(/[\s()]/g, '-');
+                const verticalSlug = verticalKey.toLowerCase();
+                completedTasks += document.querySelectorAll(`#${verticalSlug}-checklist-container input[id^="task-${verticalSlug}-${productSlug}"]:checked`).length;
+            });
+
+            return totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+        });
+        
+        verticalsChartInstance.data.datasets[0].data = percentages;
+        verticalsChartInstance.update();
+    }
+
+    function renderChecklists() {
+        const milestonesList = document.getElementById('milestones-checklist');
+        if (milestonesList) {
+            milestonesList.innerHTML = '';
+            timelineData.forEach(item => {
+                const isChecked = item.status && item.status.toLowerCase() === 'concluido';
+                const checklistItem = `<div class="flex items-center checklist-item"><input type="checkbox" id="milestone-${item.id}" data-id="${item.id}" class="h-4 w-4 text-[#0761FF] border-slate-600 rounded focus:ring-[#0761FF] bg-transparent" ${isChecked ? 'checked' : ''}><label for="milestone-${item.id}" class="ml-2 block text-slate-300">${item.title}</label></div>`;
+                milestonesList.insertAdjacentHTML('beforeend', checklistItem);
+            });
+            milestonesList.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const taskId = parseInt(e.target.dataset.id, 10);
+                    const task = timelineData.find(t => t.id === taskId);
+                    if (task) {
+                        task.status = e.target.checked ? 'Concluido' : 'Em andamento';
+                        updateUI();
+                    }
+                });
+            });
+        }
+        
+        const documentsList = document.getElementById('documents-checklist');
+        if (documentsList) {
+            documentsList.innerHTML = '';
+            documentsData.forEach((item, index) => {
+                const isChecked = item.status && (item.status.toLowerCase() === 'recebido' || item.status.toLowerCase() === 'concluido');
+                const linkAttributes = !item.link || item.link === 'javascript:void(0);'
+                    ? 'href="#" class="ml-2 block text-slate-500 cursor-not-allowed"'
+                    : `href="${item.link}" target="_blank" rel="noopener noreferrer" class="ml-2 block text-slate-300 hover:text-[#0761FF] transition-colors"`;
+
+                const checklistItem = `
+                    <div class="flex items-center checklist-item">
+                        <input type="checkbox" id="document-${index}" data-index="${index}"
+                               class="h-4 w-4 text-[#0761FF] border-slate-600 rounded focus:ring-[#0761FF] bg-transparent" 
+                               ${isChecked ? 'checked' : ''}>
+                        <a ${linkAttributes}>
+                            ${item.name}
+                        </a>
+                    </div>`;
+                documentsList.insertAdjacentHTML('beforeend', checklistItem);
+            });
+
+            documentsList.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const docIndex = parseInt(e.target.dataset.index, 10);
+                    const doc = documentsData[docIndex];
+                    if (doc) {
+                        doc.status = e.target.checked ? 'Recebido' : 'Em aberto';
+                    }
+                });
+            });
+        }
+    }
+
+    function renderVerticalProductPages(containerId, products, verticalSlug) {
+        const container = document.getElementById(containerId);
+        if (!container || !products) return;
+
+        container.innerHTML = '';
+
+        const tabsContainer = document.createElement('div');
+        tabsContainer.className = 'flex items-center gap-2 mb-6 border-b border-slate-700 pb-2 flex-wrap';
+        
+        const checklistContentContainer = document.createElement('div');
+
+        products.forEach((product, index) => {
+            const productSlug = product.name.toLowerCase().replace(/[\s()]/g, '-');
+            const tab = document.createElement('button');
+            tab.textContent = product.name;
+            tab.className = 'product-tab';
+            tab.dataset.target = `checklist-${verticalSlug}-${productSlug}`;
+            
+            const checklistDiv = document.createElement('div');
+            checklistDiv.id = `checklist-${verticalSlug}-${productSlug}`;
+            checklistDiv.className = 'product-checklist-content space-y-1 hidden';
+            
+            product.tasks.forEach((task, taskIndex) => {
+                const isHeader = task === task.toUpperCase() && !task.includes('(') && !task.includes('/');
+                
+                let itemHtml = '';
+                if (isHeader) {
+                    itemHtml = `<h4 class="font-semibold text-[#6baaff] mt-4 mb-2">${task}</h4>`;
+                } else {
+                    itemHtml = `<div class="flex items-center checklist-item ml-4">
+                                    <input type="checkbox" id="task-${verticalSlug}-${productSlug}-${taskIndex}" class="h-4 w-4 text-[#0761FF] border-slate-600 rounded focus:ring-[#0761FF] bg-transparent">
+                                    <label for="task-${verticalSlug}-${productSlug}-${taskIndex}" class="ml-2 block text-slate-300">${task}</label>
+                                </div>`;
+                }
+                checklistDiv.insertAdjacentHTML('beforeend', itemHtml);
+            });
+            
+            checklistDiv.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateVerticalsChart);
+            });
+
+            checklistContentContainer.appendChild(checklistDiv);
+
+            tab.addEventListener('click', () => {
+                tabsContainer.querySelectorAll('.product-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                checklistContentContainer.querySelectorAll('.product-checklist-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(tab.dataset.target).classList.remove('hidden');
+            });
+
+            tabsContainer.appendChild(tab);
+
+            if(index === 0) {
+                tab.classList.add('active');
+                checklistDiv.classList.remove('hidden');
+            }
+        });
+
+        container.appendChild(tabsContainer);
+        container.appendChild(checklistContentContainer);
+    }
+
+    function renderKanbanBoard() {
+        const kanbanContainer = document.getElementById('kanban-board');
+        if (!kanbanContainer || !timelineData.length) return;
+        kanbanContainer.innerHTML = '';
+
+        const firstMilestone = timelineData[0]?.title || 'Planejamento';
+        allVerticals.forEach(v => {
+            if (!verticalsKanbanStatus[v.name]) {
+                verticalsKanbanStatus[v.name] = firstMilestone;
+            }
+        });
+        localStorage.setItem('verticalsKanbanStatus', JSON.stringify(verticalsKanbanStatus));
+
+        const milestones = [...new Set(timelineData.map(t => t.title))];
+
+        milestones.forEach(milestone => {
+            const columnEl = document.createElement('div');
+            columnEl.className = 'p-4 rounded-lg bg-slate-800 kanban-column flex-shrink-0 w-72';
+            columnEl.dataset.milestone = milestone;
+
+            const cardsHtml = allVerticals
+                .filter(v => verticalsKanbanStatus[v.name] === milestone)
+                .map(v => `<div class="bg-slate-700 p-3 rounded-md shadow-sm kanban-card" draggable="true" data-vertical="${v.name}"><h4 class="font-bold text-slate-200 flex items-center"><span class="w-3 h-3 rounded-full ${v.color} mr-2"></span>${v.name}</h4></div>`)
+                .join('');
+
+            columnEl.innerHTML = `<h3 class="text-lg font-bold text-slate-200 mb-4">${milestone}</h3><div class="space-y-3 min-h-[100px]">${cardsHtml}</div>`;
+            kanbanContainer.appendChild(columnEl);
+        });
+    }
+
+    function getPriorityClass(priority) {
+        if(!priority) return 'bg-slate-700 text-slate-300';
+        switch (priority.toLowerCase()) {
+            case 'crítica': return 'bg-red-900/50 text-red-300';
+            case 'alta': return 'bg-orange-900/50 text-orange-300';
+            case 'moderada': return 'bg-sky-900/50 text-sky-300';
+            default: return 'bg-slate-700 text-slate-300';
+        }
+    }
+
+    function renderRisksTable(risksToRender) {
+        const tableBody = document.getElementById('risks-table-body');
+        tableBody.innerHTML = '';
+        if (!risksToRender || risksToRender.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-400">Nenhum risco encontrado.</td></tr>';
+            return;
+        }
+        risksToRender.forEach(risk => {
+            const priorityClass = getPriorityClass(risk.prioridade);
+            const row = `<tr class="hover:bg-slate-700 cursor-pointer"><td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-50">${risk.id}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${risk.resumo}</td><td class="px-6 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${priorityClass}">${risk.prioridade}</span></td><td class="px-6 py-4 whitespace-nowrap text-sm"><select class="p-1 border rounded-md text-sm bg-slate-700 border-slate-600" data-risk-id="${risk.id}"><option value="Em Aberto" ${risk.status === 'Em Aberto' ? 'selected' : ''}>Em Aberto</option><option value="Monitorando" ${risk.status === 'Monitorando' ? 'selected' : ''}>Monitorando</option><option value="Controlado" ${risk.status === 'Controlado' ? 'selected' : ''}>Controlado</option></select></td></tr>`;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+        tableBody.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', (e) => {
+                document.querySelectorAll('#risks-table-body tr').forEach(r => r.classList.remove('bg-slate-600'));
+                e.currentTarget.classList.add('bg-slate-600');
+            });
+        });
+    }
+
+    function setupRiskFilters() {
+        const priorityFilter = document.getElementById('priorityFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const priorities = [...new Set(allRisks.map(r => r.prioridade))];
+        priorityFilter.innerHTML = '<option value="all">Toda Prioridade</option>';
+        priorities.forEach(p => { if(p) priorityFilter.innerHTML += `<option value="${p}">${p}</option>`});
+        const statuses = [...new Set(allRisks.map(r => r.status))];
+        statusFilter.innerHTML = '<option value="all">Todo Status</option>';
+        statuses.forEach(s => { if(s) statusFilter.innerHTML += `<option value="${s}">${s}</option>`});
+        [priorityFilter, statusFilter].forEach(filter => {
+            filter.addEventListener('change', () => {
+                const selectedPriority = priorityFilter.value;
+                const selectedStatus = statusFilter.value;
+                const filteredRisks = allRisks.filter(risk => (selectedPriority === 'all' || risk.prioridade === selectedPriority) && (selectedStatus === 'all' || risk.status === selectedStatus));
+                renderRisksTable(filteredRisks);
+            });
+        });
+    }
+    
+    function setupLessonsLearned() {
+        const addBtn = document.getElementById('add-lesson-btn');
+        const lessonInput = document.getElementById('lesson-input');
+        const contextInput = document.getElementById('lesson-context');
+        const resolutionInput = document.getElementById('lesson-resolution-input');
+        const categorySelect = document.getElementById('lesson-category');
+        addBtn.addEventListener('click', () => {
+            const lessonText = lessonInput.value.trim();
+            const contextText = contextInput.value.trim();
+            const resolutionText = resolutionInput.value.trim();
+            const categoryText = categorySelect.value;
+            lessonInput.classList.toggle('border-red-500', !lessonText);
+            contextInput.classList.toggle('border-red-500', !contextText);
+            if (lessonText && contextText) {
+                lessonsLearnedData.push({ id: Date.now(), lesson: lessonText, resolution: resolutionText, context: contextText, category: categoryText });
+                localStorage.setItem('lessonsLearnedData', JSON.stringify(lessonsLearnedData));
+                lessonInput.value = ''; contextInput.value = ''; resolutionInput.value = '';
+                lessonInput.classList.remove('border-red-500'); contextInput.classList.remove('border-red-500');
+                renderLessonsLearned();
+            }
+        });
+    }
+
+    function renderLessonsLearned() {
+        const tableBody = document.getElementById('lessons-table-body');
+        if (!tableBody) return;
+        tableBody.innerHTML = '';
+        if (lessonsLearnedData.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-400">Nenhuma lição aprendida registrada.</td></tr>';
+            return;
+        }
+        lessonsLearnedData.forEach(item => {
+            const row = `<tr data-id="${item.id}"><td class="px-6 py-4 whitespace-normal text-sm text-slate-400">${item.lesson}</td><td class="px-6 py-4 whitespace-normal text-sm text-slate-400">${item.resolution}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${item.context}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${item.category}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-center"><button class="text-red-500 hover:text-red-700 delete-lesson-btn" data-id="${item.id}">Remover</button></td></tr>`;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+        document.querySelectorAll('.delete-lesson-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const idToDelete = parseInt(e.target.dataset.id, 10);
+                lessonsLearnedData = lessonsLearnedData.filter(item => item.id !== idToDelete);
+                localStorage.setItem('lessonsLearnedData', JSON.stringify(lessonsLearnedData));
+                renderLessonsLearned();
+            });
+        });
+    }
+
+    function setupNextSteps() {
+        const addBtn = document.getElementById('add-next-step-btn');
+        const descriptionInput = document.getElementById('next-step-input');
+        const responsibleInput = document.getElementById('next-step-responsible');
+        const dateInput = document.getElementById('next-step-date');
+        
+        addBtn.addEventListener('click', () => {
+            const description = descriptionInput.value.trim();
+            const responsible = responsibleInput.value.trim();
+            const date = dateInput.value;
+            
+            descriptionInput.classList.toggle('border-red-500', !description);
+            responsibleInput.classList.toggle('border-red-500', !responsible);
+            dateInput.classList.toggle('border-red-500', !date);
+            
+            if (description && responsible && date) {
+                nextStepsData.push({ 
+                    id: Date.now(), 
+                    description: description, 
+                    responsible: responsible, 
+                    date: date, 
+                    status: 'Aberto' 
+                });
+                localStorage.setItem('nextStepsData', JSON.stringify(nextStepsData));
+                
+                descriptionInput.value = ''; 
+                responsibleInput.value = ''; 
+                dateInput.value = '';
+                
+                descriptionInput.classList.remove('border-red-500'); 
+                responsibleInput.classList.remove('border-red-500'); 
+                dateInput.classList.remove('border-red-500');
+                
+                renderNextSteps('Aberto');
+            }
+        });
+    }
+
+    function renderNextSteps(filter = 'Aberto') {
+        const container = document.getElementById('next-steps-container');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div id="next-steps-tabs" class="flex border-b border-slate-700 mb-4">
+                <button class="next-steps-tab" data-filter="Aberto">Abertas</button>
+                <button class="next-steps-tab" data-filter="Concluido">Concluídas</button>
+                <button class="next-steps-tab" data-filter="Atrasado">Atrasadas</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-700">
+                    <thead class="bg-slate-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider w-2/5">Ação</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Responsável</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Data</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="next-steps-table-body" class="bg-slate-800 divide-y divide-slate-700">
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        const tableBody = container.querySelector('#next-steps-table-body');
+        const now = luxon.DateTime.now().startOf('day');
+
+        let filteredData = [];
+        if (filter === 'Atrasado') {
+            filteredData = nextStepsData.filter(item => item.status === 'Aberto' && luxon.DateTime.fromISO(item.date) < now);
+        } else {
+            filteredData = nextStepsData.filter(item => item.status === filter);
+        }
+
+        if (filteredData.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-slate-400">Nenhuma tarefa encontrada para este filtro.</td></tr>`;
+        } else {
+            tableBody.innerHTML = filteredData.map(item => {
+              const isAtrasado = item.status === 'Aberto' && luxon.DateTime.fromISO(item.date) < now;
+              const statusClass = item.status === 'Concluido' ? 'text-emerald-400' : (isAtrasado ? 'text-red-400' : 'text-yellow-400');
+              const statusText = item.status === 'Concluido' ? 'Concluído' : (isAtrasado ? 'Atrasado' : 'Aberto');
+              
+             return `
+                    <tr data-id="${item.id}">
+                        <td class="px-6 py-4 whitespace-normal text-sm text-slate-400">${item.description}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${item.responsible}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">${luxon.DateTime.fromISO(item.date).toFormat('dd/MM/yyyy')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${statusClass}">${statusText}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                            ${item.status !== 'Concluido' ? `<button class="text-emerald-500 hover:text-emerald-700 complete-next-step-btn" data-id="${item.id}">Concluir</button>` : ''}
+                            <button class="text-red-500 hover:text-red-700 delete-next-step-btn ml-2" data-id="${item.id}">Remover</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        container.querySelectorAll('.next-steps-tab').forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.filter === filter);
+            tab.addEventListener('click', () => renderNextSteps(tab.dataset.filter));
+        });
+
+        container.querySelectorAll('.delete-next-step-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const idToDelete = parseInt(e.target.dataset.id, 10);
+                nextStepsData = nextStepsData.filter(item => item.id !== idToDelete);
+                localStorage.setItem('nextStepsData', JSON.stringify(nextStepsData));
+                renderNextSteps(filter);
+            });
+        });
+        
+        container.querySelectorAll('.complete-next-step-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const idToComplete = parseInt(e.target.dataset.id, 10);
+                const task = nextStepsData.find(item => item.id === idToComplete);
+                if (task) task.status = 'Concluido';
+                localStorage.setItem('nextStepsData', JSON.stringify(nextStepsData));
+                renderNextSteps(filter);
+            });
+        });
+    }
+
+    const generateActionBtn = document.getElementById('generate-action-btn');
+    const mitigationActionBox = document.getElementById('mitigation-action-box');
+    const mitigationActionText = document.getElementById('mitigation-action-text');
+    let isFetching = false;
+    generateActionBtn.addEventListener('click', async () => {
+        if (isFetching) return;
+        const selectedRow = document.querySelector('#risks-table-body .bg-slate-600');
+        if (!selectedRow) {
+            mitigationActionText.textContent = 'Por favor, selecione um risco.';
+            mitigationActionBox.classList.remove('hidden');
+            return;
+        }
+        const riskId = selectedRow.querySelector('td').textContent;
+        const risk = allRisks.find(r => r.id === parseInt(riskId));
+        if (!risk) return;
+        isFetching = true;
+        mitigationActionText.textContent = 'Gerando plano de ação...';
+        mitigationActionBox.classList.remove('hidden');
+        generateActionBtn.disabled = true;
+        generateActionBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        try {
+            const prompt = `Como um gerente de projetos, me forneça um plano de ação conciso para mitigar o seguinte risco: Resumo do risco: "${risk.resumo}". Prioridade: "${risk.prioridade}". O plano de ação deve ser objetivo, com 3 a 5 passos práticos.`;
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-preview-0514:generateContent?key=${apiKey}`;
+            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+              mitigationActionText.textContent = result.candidates[0].content.parts[0].text;
+            } else {
+              mitigationActionText.textContent = 'Não foi possível gerar um plano de ação.';
+            }
+        } catch (error) {
+            mitigationActionText.textContent = 'Erro ao conectar com o serviço de IA.';
+        } finally {
+            isFetching = false;
+            generateActionBtn.disabled = false;
+            generateActionBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    });
+
+    function setupExportButtons() {
+        const exportLessonsBtn = document.getElementById('export-lessons-btn');
+        const exportNextStepsBtn = document.getElementById('export-next-steps-btn');
+        function convertToCSV(data) {
+            if (data.length === 0) return '';
+            const headers = Object.keys(data[0]);
+            const csvRows = [headers.join(',')]; 
+            for (const row of data) {
+                const values = headers.map(header => `"${(''+row[header]).replace(/"/g, '""')}"`);
+                csvRows.push(values.join(','));
+            }
+            return csvRows.join('\n');
+        }
+        function downloadCSV(csvString, filename) {
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        exportLessonsBtn.addEventListener('click', () => {
+            if (lessonsLearnedData.length === 0) return alert('Não há lições para exportar.');
+            downloadCSV(convertToCSV(lessonsLearnedData), 'licoes_aprendidas.csv');
+        });
+        exportNextStepsBtn.addEventListener('click', () => {
+            if (nextStepsData.length === 0) return alert('Não há próximos passos para exportar.');
+            const renamedData = nextStepsData.map(item => ({ Ação: item.description, Responsável: item.responsible, Data: item.date, Status: item.status }));
+            downloadCSV(convertToCSV(renamedData), 'proximos_passos.csv');
+        });
+    }
+    
+    function initCharts() {
+        const priorityData = allRisks.reduce((acc, risk) => { if(risk.prioridade) acc[risk.prioridade] = (acc[risk.prioridade] || 0) + 1; return acc; }, {});
+        const originData = allRisks.reduce((acc, risk) => { if(risk.origem) acc[risk.origem] = (acc[risk.origem] || 0) + 1; return acc; }, {});
+        
+        const priorityCtx = document.getElementById('priorityChart')?.getContext('2d');
+        if (priorityCtx) {
+            if(priorityChartInstance) priorityChartInstance.destroy();
+            priorityChartInstance = new Chart(priorityCtx, { type: 'doughnut', data: { labels: Object.keys(priorityData), datasets: [{ data: Object.values(priorityData), backgroundColor: ['#ef4444', '#f97316', '#0761FF', '#475569'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
+        }
+
+        const originCtx = document.getElementById('originChart')?.getContext('2d');
+        if (originCtx) {
+            if(originChartInstance) originChartInstance.destroy();
+            originChartInstance = new Chart(originCtx, { type: 'bar', data: { labels: Object.keys(originData), datasets: [{ label: 'Nº de Riscos', data: Object.values(originData), backgroundColor: '#0761FF' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+        }
+        
+        const milestoneProgressCtx = document.getElementById('milestoneProgressChart')?.getContext('2d');
+        if (milestoneProgressCtx) {
+            if(milestoneProgressChartInstance) milestoneProgressChartInstance.destroy();
+            milestoneProgressChartInstance = new Chart(milestoneProgressCtx, { type: 'doughnut', data: { labels: ['Concluído', 'Em Andamento', 'Não Iniciado'], datasets: [{ data: [0, 0, 0], backgroundColor: ['#22c55e', '#f97316', '#d1d5db'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+        }
+
+        const verticalsCtx = document.getElementById('verticalsChart')?.getContext('2d');
+        if (verticalsCtx) {
+            if (verticalsChartInstance) verticalsChartInstance.destroy();
+            const verticalLabels = allVerticals.map(v => v.name);
+            verticalsChartInstance = new Chart(verticalsCtx, {
+                type: 'bar',
+                data: {
+                    labels: verticalLabels,
+                    datasets: [{
+                        label: '% Concluído',
+                        data: [], 
+                        backgroundColor: ['#0761FF', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#6366f1'],
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, max: 100, ticks: { callback: value => `${value}%` } } }
+                }
+            });
+        }
+        
+        updateUI();
+    }
+    
+    function updateStatusLight() {
+        const indicator = document.getElementById('status-light-indicator');
+        const text = document.getElementById('status-light-text');
+        const lastTask = timelineData[timelineData.length - 1];
+        if (!lastTask || !lastTask.endDate) return;
+
+        const now = luxon.DateTime.now();
+        const endDate = luxon.DateTime.fromISO(lastTask.endDate);
+        const daysRemaining = endDate.diff(now, 'days').toObject().days;
+        
+        if (daysRemaining < 0) {
+            indicator.className = 'w-4 h-4 rounded-full mr-2 bg-red-500';
+            text.textContent = 'Atrasado';
+        } else if (daysRemaining <= 30) {
+            indicator.className = 'w-4 h-4 rounded-full mr-2 bg-yellow-500';
+            text.textContent = 'Atenção';
+        } else {
+            indicator.className = 'w-4 h-4 rounded-full mr-2 bg-emerald-500';
+            text.textContent = 'Em Dia';
+        }
+    }
+
+    function updateUI() {
+        updateMilestoneChart();
+        updateVerticalsChart();
+        updateStatusLight();
+        renderTimeline();
+    }
+
+    // LÓGICA DE ARRASTAR E SOLTAR DO KANBAN
+    let draggedCard = null;
+    const kanbanContainer = document.getElementById('kanban-board');
+
+    kanbanContainer.addEventListener('dragstart', e => {
+        if (e.target.classList.contains('kanban-card')) {
+            draggedCard = e.target;
+            setTimeout(() => e.target.classList.add('dragging'), 0);
+        }
+    });
+
+    kanbanContainer.addEventListener('dragend', e => {
+        if (draggedCard && e.target.classList.contains('kanban-card')) {
+            draggedCard.classList.remove('dragging');
+            draggedCard = null;
+        }
+    });
+
+    kanbanContainer.addEventListener('dragover', e => {
+        e.preventDefault();
+    });
+
+    kanbanContainer.addEventListener('drop', e => {
+        e.preventDefault();
+        if (draggedCard) {
+            const column = e.target.closest('.kanban-column');
+            if (column) {
+                const newMilestone = column.dataset.milestone;
+                const verticalName = draggedCard.dataset.vertical;
+                verticalsKanbanStatus[verticalName] = newMilestone;
+                localStorage.setItem('verticalsKanbanStatus', JSON.stringify(verticalsKanbanStatus));
+                renderKanbanBoard(); 
+            }
+        }
+    });
+    
+</script>
+</body>
+</html>
+

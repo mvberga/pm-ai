@@ -1,0 +1,277 @@
+# 🎯 Regras do Cursor - PM AI MVP
+
+## 📁 **Estrutura de Pastas e Contexto**
+
+### **Aplicação/**
+- **Conteúdo**: Código fonte da aplicação (backend FastAPI + frontend React)
+- **Status**: ✅ MVP 100% estabilizado e funcional
+- **Padrões**: Seguir REQUISITOS.md para padrões de código
+- **Testes**: 🧪 Infraestrutura 100% funcional, pronta para implementação completa
+
+### **Backlog/**
+- **Conteúdo**: Requisitos, especificações e backlog de funcionalidades
+- **Documentos**: Frontend, requisitos de IA, especificações técnicas
+- **Uso**: Referência para desenvolvimento de novas features
+
+### **Chats/**
+- **Conteúdo**: Histórico de conversas e decisões do projeto
+- **Documentos**: Resumos, decisões arquiteturais, contexto histórico
+- **Uso**: Manter contexto e histórico de decisões
+
+### **documentações/**
+- **Conteúdo**: Documentação técnica completa e organizada
+- **Documentos**: README, REQUISITOS, SPEC, PRÓXIMOS_PASSOS, TESTES_*
+- **Uso**: Referência centralizada para desenvolvimento e manutenção
+- **Índice**: `Aplicação/documentações/ÍNDICE_DOCUMENTAÇÃO.md` para navegação rápida
+
+---
+
+## 🚀 **Status Atual do Projeto**
+
+### **✅ MVP Completamente Estabilizado**
+- **Funcionalidade Core**: 100% operacional
+- **API Backend**: CRUD completo para todas as entidades
+- **Frontend**: Interface funcional e responsiva
+- **Banco de Dados**: Modelos e relacionamentos implementados
+- **Docker**: Ambiente containerizado e funcional
+
+### **🧪 Infraestrutura de Testes 100% Funcional**
+- **pytest + pytest-asyncio**: Configurado e operacional
+- **Fixtures async**: Funcionando perfeitamente com isolamento
+- **Banco de teste SQLite**: Em memória e operacional
+- **Criação automática de tabelas**: Antes de cada teste
+- **Isolamento completo**: Entre testes (cada teste tem banco limpo)
+
+### **🔧 Problema RESOLVIDO**
+O erro crítico `sqlalchemy.exc.OperationalError: no such table: projects` foi **completamente resolvido** através da correção do escopo dos fixtures e implementação de isolamento automático entre testes.
+
+---
+
+## 🔧 **Padrões de Desenvolvimento**
+
+### **Backend (FastAPI)**
+- **Estrutura**: Seguir padrão modular em `Aplicação/backend/app/`
+- **Padrões**: RORO, Guard Clauses, tipagem completa, injeção de dependência
+- **Testes**: Cobertura ≥85%, pytest, testes unitários e integração
+- **Código**: Conciso, técnico, modular, evitar duplicação
+
+### **Frontend (React)**
+- **Estrutura**: Componentes em `Aplicação/frontend/src/components/`
+- **Padrões**: Componentes reutilizáveis, responsivos, tratamento de erros
+- **Integração**: REST API com Axios, estado local com React hooks
+
+### **Banco de Dados**
+- **ORM**: SQLAlchemy 2.0 assíncrono
+- **Migrations**: Alembic para versionamento
+- **Extensões**: pgvector para embeddings futuros
+- **Padrões**: Índices otimizados, constraints adequadas
+
+---
+
+## 📚 **Documentação de Referência**
+
+### **Para Desenvolvimento**
+1. **`Aplicação/documentações/REQUISITOS.md`** - Padrões técnicos e convenções
+2. **`Aplicação/documentações/README.md`** - Setup e arquitetura da aplicação
+3. **`Aplicação/documentações/SPEC.md`** - Especificações do produto e funcionalidades
+
+### **Para Roadmap**
+1. **`Aplicação/documentações/PRÓXIMOS_PASSOS.md`** - Cronograma e próximas fases
+2. **`Aplicação/documentações/ESTRUTURA_PROJETO.md`** - Organização e estrutura
+
+### **Para Testes**
+1. **`Aplicação/documentações/TESTES_GERAL.md`** - Status geral dos testes
+2. **`Aplicação/documentações/TESTES_INTEGRACAO_STATUS.md`** - Status dos testes de integração
+3. **`Aplicação/documentações/TESTES_PERFORMANCE_STATUS.md`** - Status dos testes de performance
+
+### **Para Contexto Histórico**
+1. **`Aplicação/documentações/CHAT_RESUMO.md`** - Resumo de decisões e contexto
+2. **`Chats/`** - Histórico completo de conversas
+
+---
+
+## 🎯 **Prioridades de Desenvolvimento**
+
+### **Fase Atual: Consolidação e Testes (1-2 semanas)**
+- ✅ MVP estabilizado
+- 🧪 **PRÓXIMO PASSO**: Implementar testes completos para todos os modelos (2-3 horas)
+- 🔄 Testes de rotas da API
+- 🔄 Validação de schemas
+- 🔄 Testes de integração
+
+### **Próxima Fase: Evolução Funcional (2-3 semanas)**
+- 📊 Gantt e Kanban
+- 📝 Sistema de reuniões
+- 🤖 Pipeline de IA com embeddings
+- 📚 Base de conhecimento vetorial
+
+---
+
+## 🛠️ **Ferramentas e Comandos**
+
+### **Desenvolvimento Local**
+```bash
+# Subir ambiente completo
+docker compose up --build
+
+# Apenas banco
+docker compose up db -d
+
+# Backend
+docker compose up backend -d
+
+# Frontend
+docker compose up frontend -d
+```
+
+### **Testes e Qualidade**
+```bash
+# Backend
+cd Aplicação/backend
+python -m pytest
+python -m ruff check app/
+python -m ruff format app/
+
+# Frontend
+cd Aplicação/frontend
+npm test
+npm run lint
+```
+
+---
+
+## 🔍 **Padrões de Código Específicos**
+
+### **Python/FastAPI**
+- **Imports**: Relativos dentro do módulo, absolutos entre módulos
+- **Funções**: `async def` para I/O, `def` para funções puras
+- **Validação**: Pydantic v2 para schemas de entrada/saída
+- **Erros**: HTTPException padronizado, middleware para 500
+
+### **React/JavaScript**
+- **Componentes**: Funcionais com hooks, props tipadas
+- **Estado**: useState para local, Context para global
+- **API**: Axios com interceptors para tratamento de erros
+- **Roteamento**: React Router para navegação
+
+---
+
+## 📊 **Métricas e Qualidade**
+
+### **KPIs de Desenvolvimento**
+- **Cobertura de testes**: ≥85% (pronto para implementação)
+- **Latência P95**: <300ms (rotas CRUD)
+- **Disponibilidade**: 99.5% (produção)
+- **Zero erros críticos**
+
+### **Padrões de Qualidade**
+- **Linting**: ruff, black, mypy
+- **Segurança**: bandit, dependabot
+- **CI/CD**: GitHub Actions com testes automáticos
+- **Code Review**: 2 revisores para mudanças críticas
+
+---
+
+## 🚨 **Regras Críticas**
+
+### **Nunca Fazer**
+- ❌ Commitar `.env` com secrets
+- ❌ Quebrar compatibilidade da API sem versionamento
+- ❌ Ignorar testes quebrados
+- ❌ Deploy sem passar em todos os checks
+
+### **Sempre Fazer**
+- ✅ Seguir padrões do `Aplicação/documentações/REQUISITOS.md`
+- ✅ Escrever testes para novas funcionalidades
+- ✅ Documentar mudanças na API
+- ✅ Validar schemas Pydantic
+- ✅ Usar tipagem completa
+
+---
+
+## 🔄 **Fluxo de Desenvolvimento**
+
+### **Nova Feature**
+1. **Análise**: Consultar `Aplicação/documentações/SPEC.md` e Backlog/
+2. **Desenvolvimento**: Seguir padrões do `Aplicação/documentações/REQUISITOS.md`
+3. **Testes**: Cobertura ≥85%, testes de integração
+4. **Review**: Code review com 2 revisores
+5. **Deploy**: Apenas após todos os checks passarem
+
+### **Correção de Bugs**
+1. **Identificação**: Reproduzir o problema
+2. **Correção**: Seguir padrões existentes
+3. **Teste**: Teste específico para o bug
+4. **Validação**: Não introduzir regressões
+
+---
+
+## 📈 **Evolução e Manutenção**
+
+### **Atualizações de Dependências**
+- **Pin de versões**: Usar versões específicas
+- **Revisão periódica**: Atualizar dependências desatualizadas
+- **Testes**: Validar após cada atualização
+- **Rollback**: Plano de reversão documentado
+
+### **Monitoramento**
+- **Logs**: Estruturados em JSON com request_id
+- **Métricas**: Latência, taxa de erro, uso de recursos
+- **Alertas**: Baseados em SLOs definidos
+- **Observabilidade**: OpenTelemetry para tracing
+
+---
+
+## 🧪 **Status dos Testes**
+
+### **✅ Infraestrutura Base**
+- **pytest + pytest-asyncio**: 100% configurado e operacional
+- **Fixtures async**: Funcionando perfeitamente com isolamento
+- **Banco de teste SQLite**: Em memória e operacional
+- **Criação automática de tabelas**: Antes de cada teste
+- **Isolamento completo**: Entre testes (cada teste tem banco limpo)
+
+### **📊 Métricas Atuais**
+- **Testes Coletados**: 8
+- **Testes Passando**: 5 ✅
+- **Testes Falhando**: 0 ❌ (RESOLVIDO!)
+- **Cobertura**: Pronta para implementação
+- **Meta**: ≥85% (em implementação)
+
+### **🎯 Próximo Passo Crítico**
+**Implementar testes completos para todos os modelos** agora que a infraestrutura está 100% funcional.
+
+**Tempo estimado**: 2-3 horas  
+**Impacto**: Base sólida para evolução funcional  
+**Prioridade**: 🟢 ALTA (não mais bloqueadora)
+
+---
+
+## 🎉 **Resumo**
+
+Este arquivo de regras define o contexto completo do projeto PM AI MVP, incluindo:
+
+1. **Estrutura de pastas** e seu propósito
+2. **Padrões de desenvolvimento** baseados em `Aplicação/documentações/REQUISITOS.md`
+3. **Prioridades atuais** conforme `Aplicação/documentações/PRÓXIMOS_PASSOS.md`
+4. **Status dos testes** com infraestrutura 100% funcional
+5. **Ferramentas e comandos** para desenvolvimento
+6. **Regras críticas** para manter qualidade
+7. **Fluxo de desenvolvimento** padronizado
+
+**Sempre consultar os documentos de referência em `Aplicação/documentações/` antes de iniciar desenvolvimento!**
+
+---
+
+## 📋 **Documentos de Referência Rápida**
+
+| Documento | Propósito | Status |
+|-----------|-----------|---------|
+| `Aplicação/documentações/ÍNDICE_DOCUMENTAÇÃO.md` | **Navegação rápida por toda documentação** | ✅ **NOVO** |
+| `Aplicação/documentações/README.md` | Setup e arquitetura | ✅ Atualizado |
+| `Aplicação/documentações/REQUISITOS.md` | Padrões técnicos | ✅ Atualizado |
+| `Aplicação/documentações/SPEC.md` | Especificações do produto | ✅ Atualizado |
+| `Aplicação/documentações/PRÓXIMOS_PASSOS.md` | Roadmap e cronograma | ✅ Atualizado |
+| `Aplicação/documentações/TESTES_GERAL.md` | Status geral dos testes | ✅ Atualizado |
+| `Aplicação/documentações/ESTRUTURA_PROJETO.md` | Organização do projeto | ✅ Atualizado |
+| `Aplicação/documentações/CHAT_RESUMO.md` | Contexto histórico | ✅ Atualizado |

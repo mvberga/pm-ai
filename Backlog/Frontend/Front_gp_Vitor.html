@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Gerenciamento do Projeto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+        }
+        .large-chart-container {
+             position: relative;
+            width: 100%;
+            height: 400px;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+        a {
+            color: #3b82f6;
+            text-decoration: underline;
+        }
+        a:hover {
+            color: #2563eb;
+        }
+        .kanban-card {
+            cursor: grab;
+        }
+        .kanban-column .kanban-card.dragging {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-800">
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-slate-900 shadow-md flex-shrink-0">
+            <div class="p-6 flex items-center">
+                <img src="https://i.imgur.com/sJLTN2x.png" alt="Betha Logo" class="w-10 h-10 mr-3 rounded">
+                <div class="flex flex-col">
+                    <span class="text-white font-bold text-lg">Betha Sistemas</span>
+                    <span class="text-sm text-slate-400">Gerenciamento de Projetos</span>
+                </div>
+            </div>
+            <nav id="main-nav" class="mt-6">
+                <a href="#overview" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500 bg-sky-500 font-semibold">
+                    <span class="mr-3">📊</span> Visão Geral
+                </a>
+                <a href="#client-data" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500">
+                    <span class="mr-3">👤</span> Dados do Cliente
+                </a>
+                <a href="#timeline" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500">
+                    <span class="mr-3">⏳</span> Cronograma
+                </a>
+                <a href="#kanban" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500">
+                    <span class="mr-3">🗂️</span> Kanban
+                </a>
+                 <a href="#vertical-arrecadacao" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500">
+                    <span class="mr-3">💰</span> Vertical Arrecadação
+                </a>
+                <a href="#vertical-pessoal" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500">
+                    <span class="mr-3">👥</span> Vertical Pessoal
+                </a>
+                <a href="#vertical-compras" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500">
+                    <span class="mr-3">🛒</span> Vertical Compras
+                </a>
+                <a href="#vertical-contabil" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500">
+                    <span class="mr-3">🧾</span> Vertical Contábil
+                </a>
+                <a href="#risks" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500">
+                    <span class="mr-3">⚠️</span> Gestão de Riscos
+                </a>
+                <a href="#lessons" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500">
+                    <span class="mr-3">💡</span> Lições Aprendidas
+                </a>
+                <a href="#next-steps" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500">
+                    <span class="mr-3">🚀</span> Próximos Passos
+                </a>
+                <a href="#export" class="nav-link flex items-center px-6 py-3 text-white hover:bg-sky-500">
+                    <span class="mr-3">📄</span> Extração
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 sm:p-8 md:p-10">
+            
+            <!-- Overview Section -->
+            <section id="overview" class="content-section active">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Implantação Sabará</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-slate-500">Gerente do Projeto</h3>
+                        <p class="text-2xl font-bold text-slate-800 mt-2">Vitor Vargas</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-slate-500">Secretário Geral</h3>
+                        <p class="text-2xl font-bold text-slate-800 mt-2">Fernando Rosa</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-slate-500">Prazo Final</h3>
+                        <p class="text-3xl font-bold text-sky-500 mt-2">Dezembro/2025</p>
+                    </div>
+                     <div id="status-light-card" class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-slate-500">Farol de Status</h3>
+                        <div class="flex items-center mt-2">
+                            <span id="status-light-indicator" class="w-4 h-4 rounded-full mr-2"></span>
+                            <p id="status-light-text" class="text-2xl font-bold text-slate-800"></p>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+                    <h3 class="text-xl font-bold mb-4">Equipe de Implantação</h3>
+                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <p class="font-semibold text-slate-500">Arrecadação</p>
+                            <p class="text-lg font-bold text-slate-800">Bruno Resende</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-500">Pessoal</p>
+                            <p class="text-lg font-bold text-slate-800">Adilson</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-500">Compras/Contratos</p>
+                            <p class="text-lg font-bold text-slate-800">Breno Jesus</p>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-slate-500">Contábil</p>
+                            <p class="text-lg font-bold text-slate-800">Ademilson</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-center mb-4">Status dos Marcos</h3>
+                        <div class="chart-container">
+                            <canvas id="milestoneProgressChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-center mb-4">Conclusão por Vertical (%)</h3>
+                        <div class="chart-container">
+                            <canvas id="verticalsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Project Milestones Checklist -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold mb-4">Marcos do Projeto (Concluído)</h3>
+                        <div id="milestones-checklist" class="space-y-2">
+                            <!-- Checklist items will be injected here by JS -->
+                        </div>
+                    </div>
+                    <!-- Key Documents Checklist -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-xl font-bold mb-4">Documentos Chave</h3>
+                        <div id="documents-checklist" class="space-y-2">
+                            <!-- Checklist items will be injected here by JS -->
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Client Data Section -->
+            <section id="client-data" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Dados do Cliente e Plano de Comunicação</h2>
+                <div id="client-data-container" class="bg-white p-6 rounded-lg shadow-sm">
+                    <!-- Client data table will be injected here -->
+                </div>
+            </section>
+
+
+            <!-- Timeline Section (Gantt) -->
+            <section id="timeline" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Linha do Tempo do Projeto</h2>
+                <p class="mb-8 text-slate-600 max-w-3xl">Esta seção oferece uma visão detalhada do cronograma do projeto. O gráfico de Gantt permite visualizar a duração de cada atividade.</p>
+                
+                <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+                    <h3 class="text-xl font-bold mb-4">Gantt do Projeto</h3>
+                    <div class="overflow-x-auto">
+                        <div id="gantt-chart-all" class="gantt-chart min-w-[1000px]"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Kanban Section -->
+            <section id="kanban" class="content-section">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-slate-900">Kanban por Verticais</h2>
+                </div>
+                <p class="mb-8 text-slate-600 max-w-3xl">Arraste e solte os cards das verticais para movê-los entre as etapas do cronograma.</p>
+                
+                <div id="kanban-board" class="flex overflow-x-auto space-x-4 pb-4">
+                    <!-- Kanban columns will be injected here -->
+                </div>
+            </section>
+
+            <!-- Vertical Arrecadacao Section -->
+            <section id="vertical-arrecadacao" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Checklist - Vertical Arrecadação</h2>
+                <p class="mb-8 text-slate-600 max-w-3xl">Acompanhamento das tarefas específicas da vertical de Arrecadação.</p>
+                <div id="arrecadacao-checklist-container" class="space-y-6 bg-white p-6 rounded-lg shadow-sm"></div>
+            </section>
+
+            <!-- Vertical Pessoal Section -->
+            <section id="vertical-pessoal" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Checklist - Vertical Pessoal</h2>
+                <p class="mb-8 text-slate-600 max-w-3xl">Acompanhamento das tarefas específicas da vertical de Pessoal.</p>
+                <div id="pessoal-checklist-container" class="space-y-6 bg-white p-6 rounded-lg shadow-sm"></div>
+            </section>
+
+            <!-- Vertical Compras Section -->
+            <section id="vertical-compras" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Checklist - Vertical Compras/Contratos</h2>
+                <p class="mb-8 text-slate-600 max-w-3xl">Acompanhamento das tarefas específicas da vertical de Compras e Contratos.</p>
+                <div id="compras-checklist-container" class="space-y-6 bg-white p-6 rounded-lg shadow-sm"></div>
+            </section>
+
+            <!-- Vertical Contabil Section -->
+            <section id="vertical-contabil" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Checklist - Vertical Contábil</h2>
+                <p class="mb-8 text-slate-600 max-w-3xl">Acompanhamento das tarefas específicas da vertical Contábil.</p>
+                <div id="contabil-checklist-container" class="space-y-6 bg-white p-6 rounded-lg shadow-sm"></div>
+            </section>
+
+
+            <!-- Risks Section -->
+            <section id="risks" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Gestão de Riscos</h2>
+                <p class="mb-8 text-slate-600 max-w-3xl">O gerenciamento proativo de riscos é essencial. Aqui, visualizamos a distribuição dos riscos por prioridade e origem através de gráficos interativos. A tabela detalhada abaixo permite filtrar e analisar cada risco individualmente para um acompanhamento preciso.</p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-center mb-4">Riscos por Prioridade</h3>
+                        <div class="chart-container">
+                            <canvas id="priorityChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-center mb-4">Riscos por Origem</h3>
+                        <div class="chart-container">
+                            <canvas id="originChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between mb-4 gap-4">
+                        <h3 class="text-xl font-bold">Lista de Riscos</h3>
+                        <div class="flex items-center gap-4">
+                            <select id="priorityFilter" class="p-2 border rounded-md bg-white shadow-sm">
+                                <option value="all">Toda Prioridade</option>
+                            </select>
+                            <select id="statusFilter" class="p-2 border rounded-md bg-white shadow-sm">
+                                <option value="all">Todo Status</option>
+                            </select>
+                        </div>
+                        <button id="generate-action-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors">✨ Gerar Ação para Risco</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Resumo do Risco</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Prioridade</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="risks-table-body" class="bg-white divide-y divide-slate-200">
+                                <!-- Risk rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="mitigation-action-box" class="mt-4 p-4 bg-slate-100 rounded-lg hidden">
+                        <h4 class="font-bold text-slate-800">Plano de Ação Sugerido:</h4>
+                        <p id="mitigation-action-text" class="mt-2 text-slate-600"></p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Lessons Learned Section -->
+            <section id="lessons" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Lições Aprendidas</h2>
+                <p class="mb-8 text-slate-600 max-w-3xl">Registre os aprendizados do projeto para consulta e melhoria contínua em futuras implantações.</p>
+                
+                <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+                    <h3 class="text-xl font-bold mb-4">Adicionar Nova Lição</h3>
+                    <div class="space-y-4">
+                         <input type="text" id="lesson-input" placeholder="Descreva a lição aprendida" class="p-2 border rounded-md w-full">
+                         <input type="text" id="lesson-context" placeholder="Contexto/Fase do projeto" class="p-2 border rounded-md w-full">
+                         <textarea id="lesson-resolution-input" placeholder="Descreva a resolução ou ação tomada" class="p-2 border rounded-md w-full" rows="3"></textarea>
+                         <select id="lesson-category" class="p-2 border rounded-md bg-white w-full">
+                            <option value="Positivo">Positivo</option>
+                            <option value="Negativo">Negativo</option>
+                            <option value="Melhoria">Ponto de Melhoria</option>
+                        </select>
+                    </div>
+                    <button id="add-lesson-btn" class="mt-4 bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors">Adicionar Lição</button>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-xl font-bold mb-4">Lista de Lições</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/3">Lição</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/3">Resolução</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Contexto/Fase</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Categoria</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lessons-table-body" class="bg-white divide-y divide-slate-200">
+                                <!-- Lessons rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+             <!-- Next Steps Section -->
+            <section id="next-steps" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Próximos Passos</h2>
+                <p class="mb-8 text-slate-600 max-w-3xl">Defina e acompanhe as próximas ações para garantir o progresso contínuo do projeto.</p>
+                
+                <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
+                    <h3 class="text-xl font-bold mb-4">Adicionar Próximo Passo</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                        <div class="md:col-span-3">
+                            <label for="next-step-input" class="block text-sm font-medium text-slate-700">Descrição</label>
+                            <input type="text" id="next-step-input" placeholder="Descreva a ação" class="mt-1 p-2 border rounded-md w-full">
+                        </div>
+                        <div>
+                             <label for="next-step-responsible" class="block text-sm font-medium text-slate-700">Responsável</label>
+                            <input type="text" id="next-step-responsible" placeholder="Nome do responsável" class="mt-1 p-2 border rounded-md w-full">
+                        </div>
+                        <div>
+                            <label for="next-step-date" class="block text-sm font-medium text-slate-700">Data</label>
+                            <input type="date" id="next-step-date" class="mt-1 p-2 border rounded-md w-full">
+                        </div>
+                        <button id="add-next-step-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors h-10">Adicionar Passo</button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-xl font-bold mb-4">Lista de Ações</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/2">Ação</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Responsável</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Data</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="next-steps-table-body" class="bg-white divide-y divide-slate-200">
+                                <!-- Next steps rows will be injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Export Section -->
+            <section id="export" class="content-section">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Extração de Dados</h2>
+                <p class="mb-8 text-slate-600 max-w-3xl">Exporte os dados das seções "Lições Aprendidas" e "Próximos Passos" para um arquivo CSV para análise externa ou arquivamento.</p>
+                
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <button id="export-lessons-btn" class="bg-emerald-500 text-white px-6 py-3 rounded-lg hover:bg-emerald-600 transition-colors w-full md:w-auto">
+                            Exportar Lições Aprendidas (CSV)
+                        </button>
+                        <button id="export-next-steps-btn" class="bg-emerald-500 text-white px-6 py-3 rounded-lg hover:bg-emerald-600 transition-colors w-full md:w-auto">
+                            Exportar Próximos Passos (CSV)
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const navLinks = document.querySelectorAll('.nav-link');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    // --- Data Persistence ---
+    let lessonsLearnedData = JSON.parse(localStorage.getItem('lessonsLearnedData')) || [];
+    let nextStepsData = JSON.parse(localStorage.getItem('nextStepsData')) || [];
+    
+    let timelineData = JSON.parse(localStorage.getItem('timelineData')) || [
+        { id: 1, title: 'Planejamento e Monitoramento', startDate: '2025-08-13', endDate: '2025-11-25' },
+        { id: 2, title: 'Diagnostico', startDate: '2025-09-13', endDate: '2025-09-20' },
+        { id: 3, title: 'Migração de Homologação', startDate: '2025-09-13', endDate: '2025-10-20' },
+        { id: 4, title: 'Homologação e Configuração da migração', startDate: '2025-10-20', endDate: '2025-11-15' },
+        { id: 5, title: 'Migração em Produção', startDate: '2025-11-15', endDate: '2025-11-18' },
+        { id: 6, title: 'Configuração de PRD', startDate: '2025-11-18', endDate: '2025-11-22' },
+        { id: 7, title: 'Treinamento e simulação da operação', startDate: '2025-11-15', endDate: '2025-11-18' },
+        { id: 8, title: 'Operação assistida', startDate: '2025-11-25', endDate: '2025-12-15' }
+    ];
+
+    const clientData = [
+        { "Atuação": "Secretario Geral", "Nome": "Fernando Rosa", "Telefone": "315487546", "Comunicação": "Alta" },
+        { "Atuação": "Responsavel Arrecadação", "Nome": "Jorge Aragão", "Telefone": "3154654654", "Comunicação": "Alta" },
+        { "Atuação": "Responsavel Pessoal", "Nome": "Mussum", "Telefone": "3154654654", "Comunicação": "Media" },
+        { "Atuação": "Responsavel Compras/Contratos", "Nome": "Ze Carias", "Telefone": "3154654654", "Comunicação": "Media" },
+        { "Atuação": "Responsavel Contabil", "Nome": "Dede", "Telefone": "3154654654", "Comunicação": "Alta" }
+    ];
+
+    let verticalsKanbanStatus = JSON.parse(localStorage.getItem('verticalsKanbanStatus')) || {
+        'Arrecadação': 'Planejamento e Monitoramento',
+        'Pessoal': 'Planejamento e Monitoramento',
+        'Compras': 'Planejamento e Monitoramento',
+        'Contábil': 'Planejamento e Monitoramento'
+    };
+
+    const getTaskStatus = (task) => {
+        const now = luxon.DateTime.now(); 
+        const start = luxon.DateTime.fromISO(task.startDate);
+        const end = luxon.DateTime.fromISO(task.endDate).endOf('day');
+        if (now < start) return 'todo';
+        if (now >= start && now <= end) return 'inProgress';
+        return 'done';
+    };
+    
+    timelineData.forEach(task => {
+        if (!task.status) {
+            task.status = getTaskStatus(task);
+        }
+    });
+
+    const milestonesData = timelineData.map(t => t.title);
+
+    const documentsData = [
+        { name: 'Termo de Abertura', link: null },
+        { name: 'Diagnóstico', link: null },
+        { name: 'Termo de Conversão', link: null },
+        { name: 'Validação de HML', link: null },
+        { name: 'TAC - Termo de Autorização de Cobrança', link: null },
+        { name: 'Termo de Aceite de Implantação', link: null },
+        { name: 'Termo de Fechamento de Projeto', link: null }
+    ];
+
+    const allRisks = [
+        { id: 1, resumo: 'Atraso na validação da base de homologação', origem: 'Processos', prioridade: 'Alta', status: 'Em Aberto' },
+        { id: 2, resumo: 'Baixa participação nos treinamentos dos usuários', origem: 'Pessoas', prioridade: 'Crítica', status: 'Em Aberto' },
+        { id: 3, resumo: 'Atraso na entrega dos dados para migração', origem: 'Dados', prioridade: 'Crítica', status: 'Em Aberto' },
+        { id: 4, resumo: 'Inconsistência nos dados da folha de pagamento', origem: 'Dados', prioridade: 'Alta', status: 'Em Aberto' },
+        { id: 5, resumo: 'Divergência nas regras de cálculo de tributos', origem: 'Produto', prioridade: 'Alta', status: 'Monitorando' },
+        { id: 6, resumo: 'Falta de documentação para contratos legados', origem: 'Processos', prioridade: 'Moderada', status: 'Controlado' },
+        { id: 7, resumo: 'Plano de contas contábil desatualizado', origem: 'Produto', prioridade: 'Moderada', status: 'Em Aberto' },
+        { id: 8, resumo: 'Mudanças de escopo durante a implantação', origem: 'Estrutura', prioridade: 'Moderada', status: 'Controlado' },
+    ];
+
+    const arrecadacaoTasks = [ "Definir data de início, responsável pela implantação e disponibilizar documentação do projeto", "Realizar os alinhamentos iniciais e enviar a autorização de implantação (documento) - (1o contato com cliente)", "Diagnosticar base de dados", "Levantar requisitos e analisar aderência (Regras de Negócio e Customizáveis)", "Elaborar o acordo de escopo e cronograma macro da implantação (validar com Desenvolvimento e Supervisor)", "Validar o acordo de escopo de implantação e prazos com o cliente - (reunião com cliente)", "Preparar la base de dados do Desktop/Fly, realizar as pré-configurações no Cloud e solicitar chaves de acesso", "Migrar dados e registrar as correções efetuadas (ambiente de homologação)", "Validar internamente e testar os dados convertidos", "Registrar novas decisões de ajustes de dados tomadas com o cliente (via chamado de implantação ou documento de acordo de conversão)", "Validar dados convertidos com o cliente", "Corrigir os erros identificados em ambiente de homologação", "Coletar aceite de conversão e solicitar a chave oficial do produto", "Parar as operações no cliente, coletar o repositório de dados e converter os dados para o ambiente oficial (Produção)", "Validar internamente e testar os dados convertidos (Produção)", "Corrigir os erros identificados no ambiente oficial", "Realizar a digitação dos dados no Cloud (Em produção ou Homologação)", "Configurar o produto para validação básica e validar com cliente (Ambiente de Homologação)", "Validar as configurações com o cliente - Ambiente de Homologação", "Solicitar a chave de liberação e Configurar o ambiente oficial (produção)", "Validar as configurações com o cliente - Ambiente de Produção", "Efetuar levantamento e configurar as permissões dos usuários (Produção)", "Disponibilizar os treinamentos EAD e acompanhar o andamento", "Realizar treinamentos presenciais e coletar a presença", "Realizar alinhamento do início da operação", "Operação Assistida" ];
+    const pessoalTasks = [ "CADASTRO DE ENTIDADE: Tipo de administração, Poder/Órgão público, etc.", "CADASTRO DE GRUPOS FUNCIONAIS: Quantidade, Descrição, etc.", "CADASTRO DE ORGANOGRAMAS: Configuração, quantidade, código, etc.", "CADASTRO DE LOTAÇÕES FÍSICAS: Conferir configuração, quantidade, etc.", "CADASTRO DE VÍNCULOS: Conferir quantidade, descrição, etc.", "CADASTRO DE CARGOS: Conferir quantidade, descrição, etc.", "CADASTRO DE FUNÇÕES: Conferir quantidade, descrição, etc.", "CADASTRO DE PADRÕES SALARIAIS: Conferir quantidade, descrição, etc.", "CADASTRO DE NÍVEIS SALARIAIS: Conferir quantidade, descrição, etc.", "CADASTRO DE TABELAS SALARIAIS: Conferir quantidade, descrição, etc.", "CADASTRO DE EVENTOS: Conferir quantidade, descrição, etc.", "CADASTRO DE FÓRMULAS: Conferir quantidade, descrição, etc." ];
+    const comprasTasks = [ "PARÂMETROS GERAIS: Por exercício, Por entidade, Geral", "SCRIPTS DE INTERAÇÃO: Validar scripts", "PORTAIS DE DIVULGAÇÃO: Portal da transparência, PNCP", "MODELO DE RELATÓRIOS: Validar modelo de relatórios", "CASAS DECIMAIS: Para a quantidade e Para o preço unitário", "PLATAFORMAS DE INFORMAÇÕES ELETRÔNICAS: Validar se utiliza o compras.gov.br", "ESTRUTURA ORGANIZACIONAL: Organogramas, Entidades, Órgãos externos", "CATÁLOGO: Grupos e Classes, Unidades de medida, Materiais e serviços", "ORÇAMENTO: Despesas, Objetos", "Obras: Todas, Não iniciadas, Em andamento, Paralisadas, Concluídas", "PRESTAÇÃO DE CONTAS: Validar necessidade de campos" ];
+    const contabilTasks = [ "PLANEJAMENTO: PPA, LDO, LOA", "FUNCIONAL PROGRAMÁTICA: Programas, Configuração de funcionais, Função, Subfunções, Ações", "CONFIGURAÇÕES CONTÁBEIS: Plano de contas, Fontes de recurso, Códigos de acompanhamento", "CONFIGURAÇÕES DE TESOURARIA: Contas correntes, Formas de arrecadação", "EMPENHO: Tipos de empenho, Históricos de empenho", "LIQUIDAÇÃO: Históricos de liquidação", "PAGAMENTO: Formas de pagamento, Despesas extras", "RELATÓRIOS: Balancete de verificação, Balanço orçamentário, Balanço financeiro" ];
+
+    const projectStartDate = luxon.DateTime.fromISO('2025-08-13');
+    const projectEndDate = luxon.DateTime.fromISO('2025-12-15');
+    const projectDurationInDays = projectEndDate.diff(projectStartDate, 'days').toObject().days;
+
+    function updateUI() {
+        renderKanbanBoard();
+        if (document.getElementById('timeline').classList.contains('active')) {
+             renderGanttChart('gantt-chart-all', timelineData);
+        }
+        syncCheckboxesWithData();
+        updateMilestoneChart();
+        updateVerticalsChart();
+    }
+    
+    function setupNavigation() {
+        const initialHash = window.location.hash || '#overview';
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1);
+                updateContent(targetId);
+                history.pushState(null, null, `#${targetId}`);
+            });
+        });
+        window.addEventListener('popstate', () => {
+            const targetId = window.location.hash.substring(1) || 'overview';
+            updateContent(targetId);
+        });
+        updateContent(initialHash.substring(1));
+    }
+    
+    function updateContent(targetId) {
+        contentSections.forEach(section => {
+            section.classList.remove('active');
+            if (section.id === targetId) {
+                section.classList.add('active');
+            }
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('bg-sky-500', 'font-semibold');
+            if (link.getAttribute('href') === `#${targetId}`) {
+                link.classList.add('bg-sky-500', 'font-semibold');
+            }
+        });
+        if (['risks', 'overview'].includes(targetId)) initCharts();
+        if (targetId === 'timeline') renderGanttChart('gantt-chart-all', timelineData);
+        if (targetId === 'kanban') renderKanbanBoard();
+        if (targetId === 'lessons') renderLessonsLearned();
+        if (targetId === 'next-steps') renderNextSteps();
+    }
+
+    function updateMilestoneChart() {
+        if (!milestoneProgressChartInstance) return;
+        const completedItems = timelineData.filter(t => t.status === 'done').length;
+        const inProgressItems = timelineData.filter(t => t.status === 'inProgress').length;
+        const todoItems = timelineData.filter(t => t.status === 'todo').length;
+        milestoneProgressChartInstance.data.datasets[0].data = [completedItems, inProgressItems, todoItems];
+        milestoneProgressChartInstance.update();
+    }
+    
+    function updateVerticalsChart() {
+        if (!verticalsChartInstance) return;
+
+        const verticals = [
+            { name: 'Arrecadação', total: arrecadacaoTasks.length, containerId: 'arrecadacao-checklist-container' },
+            { name: 'Pessoal', total: pessoalTasks.length, containerId: 'pessoal-checklist-container' },
+            { name: 'Compras', total: comprasTasks.length, containerId: 'compras-checklist-container' },
+            { name: 'Contábil', total: contabilTasks.length, containerId: 'contabil-checklist-container' }
+        ];
+
+        const percentages = verticals.map(v => {
+            const container = document.getElementById(v.containerId);
+            if (!container) return 0;
+            const checked = container.querySelectorAll('input[type="checkbox"]:checked').length;
+            return v.total > 0 ? (checked / v.total) * 100 : 0;
+        });
+
+        verticalsChartInstance.data.datasets[0].data = percentages;
+        verticalsChartInstance.update();
+    }
+
+    function syncCheckboxesWithData() {
+        timelineData.forEach(task => {
+            const checkboxId = `milestone-${task.title.replace(/\s/g, '-')}`;
+            const checkbox = document.getElementById(checkboxId);
+            if (checkbox) {
+                checkbox.checked = task.status === 'done';
+            }
+        });
+    }
+
+    function renderChecklists() {
+        const milestonesList = document.getElementById('milestones-checklist');
+        if (milestonesList) {
+            milestonesList.innerHTML = '';
+            milestonesData.forEach(item => {
+                const checklistItem = `<div class="flex items-center checklist-item"><input type="checkbox" id="milestone-${item.replace(/\s/g, '-')}" data-title="${item}" class="h-4 w-4 text-sky-500 border-slate-300 rounded focus:ring-sky-500"><label for="milestone-${item.replace(/\s/g, '-')}" class="ml-2 block text-slate-700">${item}</label></div>`;
+                milestonesList.insertAdjacentHTML('beforeend', checklistItem);
+            });
+            milestonesList.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const title = e.target.dataset.title;
+                    const task = timelineData.find(t => t.title === title);
+                    if (task) {
+                        task.status = e.target.checked ? 'done' : getTaskStatus(task);
+                        localStorage.setItem('timelineData', JSON.stringify(timelineData));
+                        updateUI();
+                    }
+                });
+            });
+        }
+        
+        const documentsList = document.getElementById('documents-checklist');
+        if (documentsList) {
+            documentsList.innerHTML = '';
+            documentsData.forEach(item => {
+                const labelContent = item.link ? `<a href="${item.link}" target="_blank">${item.name}</a>` : item.name;
+                const checklistItem = `<div class="flex items-center checklist-item"><input type="checkbox" id="document-${item.name.replace(/\s/g, '-')}" class="h-4 w-4 text-sky-500 border-slate-300 rounded focus:ring-sky-500"><label for="document-${item.name.replace(/\s/g, '-')}" class="ml-2 block text-slate-700">${labelContent}</label></div>`;
+                documentsList.insertAdjacentHTML('beforeend', checklistItem);
+            });
+        }
+    }
+
+    function renderVerticalChecklist(containerId, tasks, verticalName) {
+        const container = document.getElementById(containerId);
+        if (container) {
+            container.innerHTML = '';
+            tasks.forEach((task, index) => {
+                const itemHtml = `<div class="flex items-center checklist-item"><input type="checkbox" id="task-${verticalName}-${index}" class="h-4 w-4 text-sky-500 border-slate-300 rounded focus:ring-sky-500"><label for="task-${verticalName}-${index}" class="ml-2 block text-slate-700">${task}</label></div>`;
+                container.insertAdjacentHTML('beforeend', itemHtml);
+            });
+            container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateVerticalsChart);
+            });
+        }
+    }
+
+    function renderClientData() {
+        const container = document.getElementById('client-data-container');
+        if (!container) return;
+        const table = `
+            <h3 class="text-xl font-bold mb-4">Contatos e Comunicação</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Atuação</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nome</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Telefone</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nível de Comunicação</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-slate-200">
+                        ${clientData.map(contact => `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">${contact['Atuação']}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">${contact['Nome']}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">${contact['Telefone']}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">${contact['Comunicação']}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        container.innerHTML = table;
+    }
+
+    function renderGanttChart(containerId, data) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        container.innerHTML = '';
+        container.classList.add('flex', 'flex-col', 'gap-2');
+        const header = document.createElement('div');
+        header.className = 'flex text-sm font-bold text-slate-600 bg-slate-100 p-2 rounded-t-lg';
+        header.innerHTML = `<div class="w-1/3">Atividade</div><div class="w-2/3 text-center">Período (${projectStartDate.toFormat('dd/MM/yy')} - ${projectEndDate.toFormat('dd/MM/yy')})</div>`;
+        container.appendChild(header);
+        data.forEach(item => {
+            const start = luxon.DateTime.fromISO(item.startDate);
+            const end = luxon.DateTime.fromISO(item.endDate);
+            const taskDurationDays = Math.max(end.diff(start, 'days').toObject().days, 0);
+            const startOffsetDays = start.diff(projectStartDate, 'days').toObject().days;
+            const startPercentage = (startOffsetDays / projectDurationInDays) * 100;
+            const widthPercentage = (taskDurationDays / projectDurationInDays) * 100;
+            let barColor = 'bg-slate-400'; 
+            if (item.status === 'inProgress') barColor = 'bg-yellow-500';
+            else if (item.status === 'done') barColor = 'bg-emerald-500';
+            const row = document.createElement('div');
+            row.className = 'flex items-center h-12';
+            row.innerHTML = `<div class="w-1/3 pr-4 text-sm"><div class="font-medium text-slate-700">${item.title}</div><div class="text-xs text-slate-500">${start.toFormat('dd/MM/yy')} - ${end.toFormat('dd/MM/yy')}</div></div><div class="w-2/3 flex-grow relative h-full bg-slate-200 rounded-lg"><div class="h-full rounded-lg ${barColor} absolute" style="left: ${startPercentage}%; width: ${widthPercentage}%;" title="${item.title}: ${start.toFormat('dd/MM/yy')} - ${end.toFormat('dd/MM/yy')}"></div></div>`;
+            container.appendChild(row);
+        });
+    }
+
+    function renderKanbanBoard() {
+        const kanbanContainer = document.getElementById('kanban-board');
+        if (!kanbanContainer) return;
+        kanbanContainer.innerHTML = '';
+        
+        const verticals = [
+            { name: 'Arrecadação', color: 'bg-sky-500' },
+            { name: 'Pessoal', color: 'bg-emerald-500' },
+            { name: 'Compras', color: 'bg-amber-500' },
+            { name: 'Contábil', color: 'bg-purple-500' }
+        ];
+
+        milestonesData.forEach(milestone => {
+            const columnEl = document.createElement('div');
+            columnEl.className = 'p-4 rounded-lg bg-slate-200 kanban-column flex-shrink-0 w-72';
+            columnEl.dataset.milestone = milestone;
+            
+            const cardsHtml = verticals
+                .filter(v => verticalsKanbanStatus[v.name] === milestone)
+                .map(v => `<div class="bg-white p-3 rounded-md shadow-sm kanban-card" draggable="true" data-vertical="${v.name}"><h4 class="font-bold text-slate-800 flex items-center"><span class="w-3 h-3 rounded-full ${v.color} mr-2"></span>${v.name}</h4></div>`)
+                .join('');
+
+            columnEl.innerHTML = `<h3 class="text-lg font-bold text-slate-800 mb-4">${milestone}</h3><div class="space-y-3 min-h-[100px]">${cardsHtml}</div>`;
+            kanbanContainer.appendChild(columnEl);
+        });
+        addDragAndDropListeners();
+    }
+
+    function addDragAndDropListeners() {
+        const cards = document.querySelectorAll('.kanban-card');
+        const columns = document.querySelectorAll('.kanban-column');
+        let draggedCard = null;
+
+        cards.forEach(card => {
+            card.addEventListener('dragstart', (e) => {
+                draggedCard = e.target;
+                setTimeout(() => e.target.classList.add('dragging'), 0);
+            });
+            card.addEventListener('dragend', () => {
+                draggedCard.classList.remove('dragging');
+                draggedCard = null;
+            });
+        });
+
+        columns.forEach(column => {
+            column.addEventListener('dragover', (e) => e.preventDefault());
+            column.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (draggedCard) {
+                    const newMilestone = column.dataset.milestone;
+                    const verticalName = draggedCard.dataset.vertical;
+                    verticalsKanbanStatus[verticalName] = newMilestone;
+                    localStorage.setItem('verticalsKanbanStatus', JSON.stringify(verticalsKanbanStatus));
+                    renderKanbanBoard();
+                }
+            });
+        });
+    }
+
+    function getPriorityClass(priority) {
+        switch (priority.toLowerCase()) {
+            case 'crítica': return 'bg-red-100 text-red-800';
+            case 'alta': return 'bg-orange-100 text-orange-800';
+            case 'moderada': return 'bg-sky-100 text-sky-800';
+            default: return 'bg-slate-100 text-slate-800';
+        }
+    }
+
+    function renderRisksTable(risksToRender) {
+        const tableBody = document.getElementById('risks-table-body');
+        tableBody.innerHTML = '';
+        if (risksToRender.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Nenhum risco encontrado.</td></tr>';
+            return;
+        }
+        risksToRender.forEach(risk => {
+            const priorityClass = getPriorityClass(risk.prioridade);
+            const row = `<tr class="hover:bg-slate-100 cursor-pointer"><td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">${risk.id}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">${risk.resumo}</td><td class="px-6 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${priorityClass}">${risk.prioridade}</span></td><td class="px-6 py-4 whitespace-nowrap text-sm"><select class="p-1 border rounded-md text-sm" data-risk-id="${risk.id}"><option value="Em Aberto" ${risk.status === 'Em Aberto' ? 'selected' : ''}>Em Aberto</option><option value="Monitorando" ${risk.status === 'Monitorando' ? 'selected' : ''}>Monitorando</option><option value="Controlado" ${risk.status === 'Controlado' ? 'selected' : ''}>Controlado</option></select></td></tr>`;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+        tableBody.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', (e) => {
+                document.querySelectorAll('#risks-table-body tr').forEach(r => r.classList.remove('bg-slate-200'));
+                e.currentTarget.classList.add('bg-slate-200');
+            });
+        });
+    }
+
+    function setupRiskFilters() {
+        const priorityFilter = document.getElementById('priorityFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const priorities = [...new Set(allRisks.map(r => r.prioridade))];
+        priorities.forEach(p => priorityFilter.innerHTML += `<option value="${p}">${p}</option>`);
+        const statuses = [...new Set(allRisks.map(r => r.status))];
+        statuses.forEach(s => statusFilter.innerHTML += `<option value="${s}">${s}</option>`);
+        [priorityFilter, statusFilter].forEach(filter => {
+            filter.addEventListener('change', () => {
+                const selectedPriority = priorityFilter.value;
+                const selectedStatus = statusFilter.value;
+                const filteredRisks = allRisks.filter(risk => (selectedPriority === 'all' || risk.prioridade === selectedPriority) && (selectedStatus === 'all' || risk.status === selectedStatus));
+                renderRisksTable(filteredRisks);
+            });
+        });
+    }
+    
+    function setupLessonsLearned() {
+        const addBtn = document.getElementById('add-lesson-btn');
+        const lessonInput = document.getElementById('lesson-input');
+        const contextInput = document.getElementById('lesson-context');
+        const resolutionInput = document.getElementById('lesson-resolution-input');
+        const categorySelect = document.getElementById('lesson-category');
+        addBtn.addEventListener('click', () => {
+            const lessonText = lessonInput.value.trim();
+            const contextText = contextInput.value.trim();
+            const resolutionText = resolutionInput.value.trim();
+            const categoryText = categorySelect.value;
+            lessonInput.classList.toggle('border-red-500', !lessonText);
+            contextInput.classList.toggle('border-red-500', !contextText);
+            if (lessonText && contextText) {
+                lessonsLearnedData.push({ id: Date.now(), lesson: lessonText, resolution: resolutionText, context: contextText, category: categoryText });
+                localStorage.setItem('lessonsLearnedData', JSON.stringify(lessonsLearnedData));
+                lessonInput.value = ''; contextInput.value = ''; resolutionInput.value = '';
+                lessonInput.classList.remove('border-red-500'); contextInput.classList.remove('border-red-500');
+                renderLessonsLearned();
+            }
+        });
+    }
+
+    function renderLessonsLearned() {
+        const tableBody = document.getElementById('lessons-table-body');
+        if (!tableBody) return;
+        tableBody.innerHTML = '';
+        if (lessonsLearnedData.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-slate-500">Nenhuma lição aprendida registrada.</td></tr>';
+            return;
+        }
+        lessonsLearnedData.forEach(item => {
+            const row = `<tr data-id="${item.id}"><td class="px-6 py-4 whitespace-normal text-sm text-slate-600">${item.lesson}</td><td class="px-6 py-4 whitespace-normal text-sm text-slate-600">${item.resolution}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">${item.context}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">${item.category}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-center"><button class="text-red-500 hover:text-red-700 delete-lesson-btn" data-id="${item.id}">Remover</button></td></tr>`;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+        document.querySelectorAll('.delete-lesson-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const idToDelete = parseInt(e.target.dataset.id, 10);
+                lessonsLearnedData = lessonsLearnedData.filter(item => item.id !== idToDelete);
+                localStorage.setItem('lessonsLearnedData', JSON.stringify(lessonsLearnedData));
+                renderLessonsLearned();
+            });
+        });
+    }
+
+    function setupNextSteps() {
+        const addBtn = document.getElementById('add-next-step-btn');
+        const descriptionInput = document.getElementById('next-step-input');
+        const responsibleInput = document.getElementById('next-step-responsible');
+        const dateInput = document.getElementById('next-step-date');
+        addBtn.addEventListener('click', () => {
+            const description = descriptionInput.value.trim();
+            const responsible = responsibleInput.value.trim();
+            const date = dateInput.value;
+            descriptionInput.classList.toggle('border-red-500', !description);
+            responsibleInput.classList.toggle('border-red-500', !responsible);
+            dateInput.classList.toggle('border-red-500', !date);
+            if (description && responsible && date) {
+                nextStepsData.push({ id: Date.now(), description: description, responsible: responsible, date: luxon.DateTime.fromISO(date).toFormat('dd/MM/yyyy') });
+                localStorage.setItem('nextStepsData', JSON.stringify(nextStepsData));
+                descriptionInput.value = ''; responsibleInput.value = ''; dateInput.value = '';
+                descriptionInput.classList.remove('border-red-500'); responsibleInput.classList.remove('border-red-500'); dateInput.classList.remove('border-red-500');
+                renderNextSteps();
+            }
+        });
+    }
+
+    function renderNextSteps() {
+        const tableBody = document.getElementById('next-steps-table-body');
+        if (!tableBody) return;
+        tableBody.innerHTML = '';
+        if (nextStepsData.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Nenhum próximo passo definido.</td></tr>';
+            return;
+        }
+        nextStepsData.forEach(item => {
+            const row = `<tr data-id="${item.id}"><td class="px-6 py-4 whitespace-normal text-sm text-slate-600">${item.description}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">${item.responsible}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">${item.date}</td><td class="px-6 py-4 whitespace-nowrap text-sm text-center"><button class="text-red-500 hover:text-red-700 delete-next-step-btn" data-id="${item.id}">Remover</button></td></tr>`;
+            tableBody.insertAdjacentHTML('beforeend', row);
+        });
+        document.querySelectorAll('.delete-next-step-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const idToDelete = parseInt(e.target.dataset.id, 10);
+                nextStepsData = nextStepsData.filter(item => item.id !== idToDelete);
+                localStorage.setItem('nextStepsData', JSON.stringify(nextStepsData));
+                renderNextSteps();
+            });
+        });
+    }
+
+    const generateActionBtn = document.getElementById('generate-action-btn');
+    const mitigationActionBox = document.getElementById('mitigation-action-box');
+    const mitigationActionText = document.getElementById('mitigation-action-text');
+    let isFetching = false;
+    generateActionBtn.addEventListener('click', async () => {
+        if (isFetching) return;
+        const selectedRow = document.querySelector('#risks-table-body .bg-slate-200');
+        if (!selectedRow) {
+            mitigationActionText.textContent = 'Por favor, selecione um risco.';
+            mitigationActionBox.classList.remove('hidden');
+            return;
+        }
+        const riskId = selectedRow.querySelector('td').textContent;
+        const risk = allRisks.find(r => r.id === parseInt(riskId));
+        if (!risk) return;
+        isFetching = true;
+        mitigationActionText.textContent = 'Gerando plano de ação...';
+        mitigationActionBox.classList.remove('hidden');
+        generateActionBtn.disabled = true;
+        generateActionBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        try {
+            const prompt = `Como um gerente de projetos, me forneça um plano de ação conciso para mitigar o seguinte risco: Resumo do risco: "${risk.resumo}". Prioridade: "${risk.prioridade}". O plano de ação deve ser objetivo, com 3 a 5 passos práticos.`;
+            let chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+            const payload = { contents: chatHistory };
+            const apiKey = ""; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-preview-0514:generateContent?key=${apiKey}`;
+            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+              mitigationActionText.textContent = result.candidates[0].content.parts[0].text;
+            } else {
+              mitigationActionText.textContent = 'Não foi possível gerar um plano de ação.';
+            }
+        } catch (error) {
+            mitigationActionText.textContent = 'Erro ao conectar com o serviço de IA.';
+        } finally {
+            isFetching = false;
+            generateActionBtn.disabled = false;
+            generateActionBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+    });
+
+    function setupExportButtons() {
+        const exportLessonsBtn = document.getElementById('export-lessons-btn');
+        const exportNextStepsBtn = document.getElementById('export-next-steps-btn');
+        function convertToCSV(data) {
+            if (data.length === 0) return '';
+            const headers = Object.keys(data[0]);
+            const csvRows = [headers.join(',')]; 
+            for (const row of data) {
+                const values = headers.map(header => `"${(''+row[header]).replace(/"/g, '""')}"`);
+                csvRows.push(values.join(','));
+            }
+            return csvRows.join('\n');
+        }
+        function downloadCSV(csvString, filename) {
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        exportLessonsBtn.addEventListener('click', () => {
+            if (lessonsLearnedData.length === 0) return alert('Não há lições para exportar.');
+            downloadCSV(convertToCSV(lessonsLearnedData), 'licoes_aprendidas.csv');
+        });
+        exportNextStepsBtn.addEventListener('click', () => {
+            if (nextStepsData.length === 0) return alert('Não há próximos passos para exportar.');
+            const renamedData = nextStepsData.map(item => ({ Ação: item.description, Responsável: item.responsible, Data: item.date }));
+            downloadCSV(convertToCSV(renamedData), 'proximos_passos.csv');
+        });
+    }
+
+    let priorityChartInstance, originChartInstance, milestoneProgressChartInstance, verticalsChartInstance;
+    
+    function initCharts() {
+        const priorityData = allRisks.reduce((acc, risk) => { acc[risk.prioridade] = (acc[risk.prioridade] || 0) + 1; return acc; }, {});
+        const originData = allRisks.reduce((acc, risk) => { acc[risk.origem] = (acc[risk.origem] || 0) + 1; return acc; }, {});
+        
+        const priorityCtx = document.getElementById('priorityChart')?.getContext('2d');
+        if (priorityCtx) {
+            if(priorityChartInstance) priorityChartInstance.destroy();
+            priorityChartInstance = new Chart(priorityCtx, { type: 'doughnut', data: { labels: Object.keys(priorityData), datasets: [{ data: Object.values(priorityData), backgroundColor: ['#ef4444', '#f97316', '#3b82f6', '#475569'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } } });
+        }
+
+        const originCtx = document.getElementById('originChart')?.getContext('2d');
+        if (originCtx) {
+            if(originChartInstance) originChartInstance.destroy();
+            originChartInstance = new Chart(originCtx, { type: 'bar', data: { labels: Object.keys(originData), datasets: [{ label: 'Nº de Riscos', data: Object.values(originData), backgroundColor: '#3b82f6' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+        }
+        
+        const milestoneProgressCtx = document.getElementById('milestoneProgressChart')?.getContext('2d');
+        if (milestoneProgressCtx) {
+            if(milestoneProgressChartInstance) milestoneProgressChartInstance.destroy();
+            milestoneProgressChartInstance = new Chart(milestoneProgressCtx, { type: 'doughnut', data: { labels: ['Concluído', 'Em Andamento', 'Pendente'], datasets: [{ data: [0, 0, timelineData.length], backgroundColor: ['#10b981', '#f59e0b', '#d1d5db'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+        }
+
+        const verticalsCtx = document.getElementById('verticalsChart')?.getContext('2d');
+        if (verticalsCtx) {
+            if (verticalsChartInstance) verticalsChartInstance.destroy();
+            verticalsChartInstance = new Chart(verticalsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Arrecadação', 'Pessoal', 'Compras', 'Contábil'],
+                    datasets: [{
+                        label: '% Concluído',
+                        data: [0, 0, 0, 0], // Initial data
+                        backgroundColor: ['#3b82f6', '#10b981', '#f97316', '#8b5cf6'],
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, max: 100, ticks: { callback: value => `${value}%` } } }
+                }
+            });
+        }
+        
+        updateMilestoneChart();
+        updateVerticalsChart();
+        updateStatusLight();
+    }
+    
+    function updateStatusLight() {
+        const indicator = document.getElementById('status-light-indicator');
+        const text = document.getElementById('status-light-text');
+        const now = luxon.DateTime.now();
+        const endDate = luxon.DateTime.fromISO(projectEndDate);
+        const daysRemaining = endDate.diff(now, 'days').toObject().days;
+        if (daysRemaining < 0) {
+            indicator.className = 'w-4 h-4 rounded-full mr-2 bg-red-500';
+            text.textContent = 'Atrasado';
+        } else if (daysRemaining <= 30) {
+            indicator.className = 'w-4 h-4 rounded-full mr-2 bg-yellow-500';
+            text.textContent = 'Atenção';
+        } else {
+            indicator.className = 'w-4 h-4 rounded-full mr-2 bg-emerald-500';
+            text.textContent = 'Em Dia';
+        }
+    }
+
+    // Initial calls
+    renderChecklists();
+    renderClientData();
+    renderVerticalChecklist('arrecadacao-checklist-container', arrecadacaoTasks, 'arrecadacao');
+    renderVerticalChecklist('pessoal-checklist-container', pessoalTasks, 'pessoal');
+    renderVerticalChecklist('compras-checklist-container', comprasTasks, 'compras');
+    renderVerticalChecklist('contabil-checklist-container', contabilTasks, 'contabil');
+    setupNavigation();
+    renderRisksTable(allRisks);
+    setupRiskFilters();
+    setupLessonsLearned();
+    setupNextSteps();
+    setupExportButtons();
+    renderLessonsLearned(); 
+    renderNextSteps(); 
+    updateUI();
+});
+</script>
+</body>
+</html>

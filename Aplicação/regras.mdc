@@ -1,0 +1,202 @@
+# 📜 Regras do Projeto — PM AI MVP (Cursor)
+
+**Data de Criação:** 29 de Agosto de 2025  
+**Última Atualização:** 29 de Agosto de 2025  
+**Versão:** 1.0.0  
+**Status:** ✅ Ativo
+
+---
+
+## 🚀 Status Atual do Projeto
+
+### ✅ MVP Completamente Estabilizado
+- Funcionalidade Core: 100% operacional
+- API Backend: CRUD completo para todas as entidades
+- Frontend: Interface funcional e responsiva
+- Banco de Dados: Modelos e relacionamentos implementados
+- Docker: Ambiente containerizado e funcional
+
+### 🧪 Infraestrutura de Testes 100% Funcional
+- pytest + pytest-asyncio configurados
+- Fixtures async com isolamento
+- Banco de testes SQLite em memória
+- Criação automática de tabelas por teste
+- Isolamento completo entre testes
+
+### 🔧 Problema Resolvido
+O erro `sqlalchemy.exc.OperationalError: no such table: projects` foi resolvido ajustando o escopo dos fixtures e o isolamento do banco em testes.
+
+---
+
+## 🔧 Padrões de Desenvolvimento
+
+### Backend (FastAPI)
+- Estrutura modular em `Aplicação/backend/app/`
+- Princípios: RORO, Guard Clauses, tipagem completa, DI
+- Testes: cobertura alvo ≥ 85%; unitários e integração
+- Código: conciso, técnico, modular, sem duplicação
+
+### Frontend (React)
+- Componentes em `Aplicação/frontend/src/components/`
+- Padrões: componentes reutilizáveis, responsivos, tratamento de erros
+- Integração: REST API via Axios; estado com hooks/Context
+
+### Banco de Dados
+- ORM: SQLAlchemy 2.0 assíncrono
+- Migrations: Alembic
+- Extensões: `pgvector` para embeddings futuros
+- Padrões: índices, constraints e integridade referencial
+
+---
+
+## 📚 Documentação de Referência
+- `Aplicação/documentações/REQUISITOS.md` — Padrões técnicos
+- `Aplicação/documentações/README.md` — Setup e arquitetura
+- `Aplicação/documentações/SPEC.md` — Especificações do produto
+- `Aplicação/documentações/PRÓXIMOS_PASSOS.md` — Roadmap
+- `Aplicação/documentações/TESTES_GERAL.md` — Status de testes
+- `Aplicação/documentações/ESTRUTURA_PROJETO.md` — Organização
+- `Aplicação/documentações/CHAT_RESUMO.md` — Decisões e contexto
+
+---
+
+## 🎯 Prioridades de Desenvolvimento
+
+### Fase Atual: Consolidação e Testes (1–2 semanas)
+- ✅ MVP estabilizado
+- 🧪 Próximo passo: testes completos para todos os modelos (2–3h)
+- 🔄 Testes de rotas e validação de schemas
+- 🔄 Testes de integração
+
+### Próxima Fase: Evolução Funcional (2–3 semanas)
+- 📊 Gantt e Kanban
+- 📝 Sistema de reuniões
+- 🤖 Pipeline de IA com embeddings
+- 📚 Base de conhecimento vetorial
+
+---
+
+## 🛠️ Ferramentas e Comandos
+
+### Desenvolvimento Local
+```bash
+# Subir ambiente completo
+cd Aplicação
+docker compose up --build
+
+# Apenas banco
+docker compose up db -d
+
+# Backend
+docker compose up backend -d
+
+# Frontend
+docker compose up frontend -d
+```
+
+### Testes e Qualidade
+```bash
+# Backend
+cd Aplicação/backend
+python -m pytest
+python -m ruff check app/
+python -m ruff format app/
+
+# Frontend
+cd ../frontend
+npm test
+npm run lint
+```
+
+---
+
+## 🔍 Padrões de Código Específicos
+
+### Python/FastAPI
+- Imports: relativos no módulo, absolutos entre módulos
+- Funções: `async def` para I/O, `def` para funções puras
+- Validação: Pydantic v2
+- Erros: `HTTPException` padronizado; middleware para 500
+
+### React/JavaScript
+- Componentes funcionais com hooks; props tipadas (TS)
+- Estado: `useState`/`useReducer`; Context para global
+- API: Axios com interceptors
+- Roteamento: React Router
+
+---
+
+## 📊 Métricas e Qualidade
+- Cobertura de testes: alvo ≥ 85%
+- Latência P95: < 300 ms (rotas CRUD)
+- Disponibilidade: 99.5% (prod)
+- Zero erros críticos
+
+---
+
+## 🚨 Regras Críticas
+
+### Nunca Fazer
+- ❌ Commitar `.env` com segredos
+- ❌ Quebrar compatibilidade da API sem versionar
+- ❌ Ignorar testes quebrados
+- ❌ Deploy sem todos os checks verdes
+
+### Sempre Fazer
+- ✅ Seguir `Aplicação/documentações/REQUISITOS.md`
+- ✅ Escrever testes para novas features
+- ✅ Documentar mudanças na API
+- ✅ Validar schemas Pydantic
+- ✅ Usar tipagem completa
+
+---
+
+## 🔄 Fluxo de Desenvolvimento
+
+### Nova Feature
+1. Analisar requisitos em `SPEC.md` e `Backlog/`
+2. Desenvolver conforme `REQUISITOS.md`
+3. Escrever testes (alvo ≥ 85%)
+4. Code review (2 revisores p/ mudanças críticas)
+5. Deploy após checks
+
+### Correção de Bug
+1. Reproduzir e isolar
+2. Corrigir seguindo padrões
+3. Cobrir com teste
+4. Validar sem regressões
+
+---
+
+## 📈 Evolução e Manutenção
+- Dependências pinadas; revisão periódica
+- Testes após atualização de libs
+- Plano de rollback documentado
+- Observabilidade e métricas (OpenTelemetry – futuro)
+
+---
+
+## 🔐 Segurança
+- CORS restrito; JWT (RS256 em prod)
+- Bandit/SCA; segredos via env/secret manager
+- Logs estruturados sem PII; masking quando necessário
+
+---
+
+## 🧭 UX/UI e Layout (Diretrizes resumidas)
+- Navegação hierárquica por perfis: Executivo, Operacional, GP
+- Sidebar colapsável + Header com busca/notificações
+- Grid responsivo; acessibilidade (teclado, ARIA, contraste)
+- Componentização (cards adaptativos; tabelas; gráficos)
+- Breakpoints: sm 640, md 768, lg 1024, xl 1280, 2xl 1536
+
+---
+
+## 📋 Definition of Ready / Done
+- Ready: escopo claro, critérios testáveis, riscos mapeados
+- Done: testes verdes (≥ 85%), logs/métricas, docs atualizadas, migrações OK, release anotada
+
+---
+
+## 📞 Contato
+- Use o repositório (issues/PRs) para dúvidas e mudanças
