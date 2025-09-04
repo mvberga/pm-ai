@@ -14,8 +14,8 @@ Arquivo complementar em `documentações/RESUMO_ESTRUTURA_CODIGO.txt` com:
 [![E2E Real](https://github.com/mvberga/pm-ai/actions/workflows/e2e-real.yml/badge.svg)](https://github.com/mvberga/pm-ai/actions/workflows/e2e-real.yml)
 
 **Data de Criação:** 28 de Agosto de 2025  
-**Última Atualização:** 2 de Setembro de 2025  
-**Status Atual:** 🎉 **BACKEND 100% TESTADO E FUNCIONAL + ARQUITETURA EXPANDIDA + FASE 2 CONCLUÍDA + FASE 3 MONITORING & LOGGING CONCLUÍDA** + **Frontend com testes e E2E**  
+**Última Atualização:** 4 de Setembro de 2025  
+**Status Atual:** 🎉 **BACKEND 100% TESTADO E FUNCIONAL + ARQUITETURA EXPANDIDA + FASE 2 CONCLUÍDA + FASE 3 MONITORING & LOGGING CONCLUÍDA** + **Frontend com Report Executivo, tema primary e E2E**  
 **Próxima Ação:** Production Deployment - Deploy em staging, testes de integração, deploy em produção
 
 ---
@@ -70,9 +70,11 @@ O **PM AI MVP** é uma ferramenta moderna de gestão de projetos com inteligênc
 - **Security Enhancement**: ✅ Melhorias de segurança para produção
 
 ### **🧪 Frontend - Testes & E2E**
-- **Jest + RTL** configurados; testes para `ProjectsList`, `ProjectDetail`, `Checklist`, `ActionItems`
-- **Cobertura inicial**: ~52% (linhas)
-- **Cypress**: smoke, fluxo mockado, erros (401/404/422) e 1 fluxo real contra backend
+- **Jest + RTL (CI)**: 28/28 suites (358 testes) — relatório em `frontend/coverage/`
+- **Cobertura (Jest – snapshot)**: Stmts 40.31% • Branches 45.92% • Funcs 42.29% • Lines 39.74%
+- **Cypress (mockado)**: 8/8 specs (abas do Report, modal de Ações, estados vazio/erro e smoke)
+- **Report Executivo**: rota `/projects/status` com abas (Visão Geral, Cronograma, Financeiro), KPIs e tabela
+- **Tema**: Tailwind token `primary` (`500: #0761FF`, `600: #054ed9`) aplicado em abas/SideNav/TopBar/Tabela
 
 ---
 
@@ -89,8 +91,8 @@ O **PM AI MVP** é uma ferramenta moderna de gestão de projetos com inteligênc
 - **Framework**: React 18 com TypeScript
 - **Build Tool**: Vite
 - **Estado**: Context API e hooks
-- **UI**: Componentes customizados
-- **Status**: 🧪 Estrutura implementada, testes pendentes
+- **UI**: Componentes customizados (tema `primary`)
+- **Status**: ✅ Report Executivo implementado + testes unitários e E2E estabilizados
 
 ### **Infraestrutura**
 - **Containerização**: Docker e Docker Compose
@@ -134,9 +136,10 @@ O **PM AI MVP** é uma ferramenta moderna de gestão de projetos com inteligênc
 - **Validação**: Schemas e constraints testados
 
 ### **Frontend**
-- **Cobertura de Testes**: ~52% (linhas)
-- **Estrutura**: Testes unitários e E2E configurados
-- **Próximo Passo**: Ampliar cobertura e cenários E2E reais
+- **CI (Jest)**: 28/28 suites, 358/358 testes
+- **Cobertura (Jest – snapshot)**: Stmts 40.31% • Branches 45.92% • Funcs 42.29% • Lines 39.74%
+- **E2E (Cypress)**: 8/8 specs (abas/modal/vazio-erro/smoke)
+- **Próximo Passo**: E2E live opcional contra backend real e ampliar cenários
 
 ---
 
