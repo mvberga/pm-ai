@@ -1,0 +1,108 @@
+# Elasticsearch Configuration for PM AI MVP
+
+# Cluster settings
+cluster.name: pm-ai-cluster
+node.name: elasticsearch
+node.roles: [ master, data, ingest ]
+
+# Network settings
+network.host: 0.0.0.0
+http.port: 9200
+transport.port: 9300
+
+# Discovery settings
+discovery.type: single-node
+
+# Memory settings
+bootstrap.memory_lock: true
+
+# Security settings (disabled for development)
+xpack.security.enabled: false
+xpack.security.enrollment.enabled: false
+xpack.security.http.ssl.enabled: false
+xpack.security.transport.ssl.enabled: false
+
+# Monitoring settings
+xpack.monitoring.collection.enabled: true
+
+# Index settings
+action.auto_create_index: true
+action.destructive_requires_name: true
+
+# Logging settings
+logger.level: INFO
+logger.level.org.elasticsearch.deprecation: WARN
+
+# Performance settings
+indices.memory.index_buffer_size: 20%
+indices.queries.cache.size: 10%
+indices.fielddata.cache.size: 20%
+
+# Thread pool settings
+thread_pool.write.queue_size: 1000
+thread_pool.search.queue_size: 1000
+
+# Circuit breaker settings
+indices.breaker.total.limit: 70%
+indices.breaker.fielddata.limit: 40%
+indices.breaker.request.limit: 60%
+
+# Shard settings
+cluster.routing.allocation.disk.threshold_enabled: true
+cluster.routing.allocation.disk.watermark.low: 85%
+cluster.routing.allocation.disk.watermark.high: 90%
+cluster.routing.allocation.disk.watermark.flood_stage: 95%
+
+# Index lifecycle management
+xpack.ilm.enabled: true
+
+# Machine learning
+xpack.ml.enabled: true
+
+# Watcher (for alerting)
+xpack.watcher.enabled: true
+
+# Cross-cluster replication
+xpack.ccr.enabled: true
+
+# Snapshot and restore
+xpack.snapshot.enabled: true
+
+# Transform
+xpack.transform.enabled: true
+
+# Data streams
+xpack.data_streams.enabled: true
+
+# Searchable snapshots
+xpack.searchable_snapshots.enabled: true
+
+# Frozen indices
+xpack.frozen_indices.enabled: true
+
+# Spatial
+xpack.spatial.enabled: true
+
+# Analytics
+xpack.analytics.enabled: true
+
+# EQL
+xpack.eql.enabled: true
+
+# SQL
+xpack.sql.enabled: true
+
+# Rollup
+xpack.rollup.enabled: true
+
+# Index templates
+index.number_of_shards: 1
+index.number_of_replicas: 0
+
+# Path settings
+path.data: /usr/share/elasticsearch/data
+path.logs: /usr/share/elasticsearch/logs
+
+# Plugin settings
+plugins.security.ssl.http.enabled: false
+plugins.security.ssl.transport.enabled: false

@@ -2,16 +2,23 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import ProjectsList from '../../pages/ProjectsList'
-import api from '../../api/client'
+import { useProjects } from '../../api/projects'
 
-jest.mock('../../api/client', () => ({
+jest.mock('../../api/projects', () => ({
   __esModule: true,
-  default: { get: jest.fn() }
+  useProjects: jest.fn()
 }))
 
 describe('ProjectsList - estados vazios e erro', () => {
   it('exibe lista vazia sem quebrar', async () => {
-    api.get.mockResolvedValueOnce({ data: [] })
+    const mockUseProjects = {
+      projects: [],
+      loading: false,
+      error: null,
+      fetchProjects: jest.fn()
+    }
+
+    useProjects.mockReturnValue(mockUseProjects)
 
     render(
       <MemoryRouter initialEntries={['/projects']}>
@@ -29,9 +36,16 @@ describe('ProjectsList - estados vazios e erro', () => {
     })
   })
 
-  it('faz catch de erro da API sem lançar', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    api.get.mockRejectedValueOnce(new Error('falha'))
+  it('exibe erro da API com botão para tentar novamente', async () => {
+    const mockFetchProjects = jest.fn()
+    const mockUseProjects = {
+      projects: [],
+      loading: false,
+      error: 'Erro ao carregar projetos',
+      fetchProjects: mockFetchProjects
+    }
+
+    useProjects.mockReturnValue(mockUseProjects)
 
     render(
       <MemoryRouter initialEntries={['/projects']}>
@@ -41,14 +55,8 @@ describe('ProjectsList - estados vazios e erro', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByText('Projetos')).toBeInTheDocument()
-
-    await waitFor(() => {
-      // Continua renderizando sem links
-      expect(screen.queryByRole('link')).not.toBeInTheDocument()
-    })
-
-    consoleSpy.mockRestore()
+    expect(screen.getByText('Erro ao carregar projetos: Erro ao carregar projetos')).toBeInTheDocument()
+    expect(screen.getByText('Tentar novamente')).toBeInTheDocument()
   })
 })
 

@@ -39,9 +39,11 @@ async def test_multiple_users_creating_projects(
     
     created_users = []
     for user_data in users_data:
+        from app.utils.auth import hash_password
         user = User(
             email=user_data["email"],
-            name=user_data["name"]
+            name=user_data["name"],
+            hashed_password=hash_password("testpassword")
         )
         db_session.add(user)
         created_users.append(user)
@@ -51,23 +53,23 @@ async def test_multiple_users_creating_projects(
     for user in created_users:
         await db_session.refresh(user)
     
-    print(f"✅ {len(created_users)} usuários criados")
+    print(f"[OK] {len(created_users)} usuários criados")
     
     # 2. Função para criar projeto
     async def create_project_for_user(user: User, project_number: int):
         project_data = {
             "name": f"Projeto {project_number} - {user.name}",
             "description": f"Projeto de teste para {user.name}",
-            "municipio": "São Paulo",  # ✅ NOVO: campo obrigatório
-            "entidade": "Prefeitura",  # ✅ NOVO: campo obrigatório
+            "municipio": "São Paulo",  # [OK] NOVO: campo obrigatório
+            "entidade": "Prefeitura",  # [OK] NOVO: campo obrigatório
             "portfolio": f"Portfolio {project_number}",
             "vertical": "Technology",
             "product": "Software",
-            "tipo": "implantacao",  # ✅ NOVO: campo obrigatório
-            "data_inicio": "2024-01-01",  # ✅ NOVO: campo obrigatório
-            "data_fim": "2024-12-31",  # ✅ NOVO: campo obrigatório
-            "gerente_projeto_id": 1,  # ✅ NOVO: campo obrigatório
-            "gerente_portfolio_id": 1  # ✅ NOVO: campo obrigatório
+            "tipo": "implantacao",  # [OK] NOVO: campo obrigatório
+            "data_inicio": "2024-01-01",  # [OK] NOVO: campo obrigatório
+            "data_fim": "2024-12-31",  # [OK] NOVO: campo obrigatório
+            "gerente_projeto_id": 1,  # [OK] NOVO: campo obrigatório
+            "gerente_portfolio_id": 1  # [OK] NOVO: campo obrigatório
         }
         
         response = await client.post(
@@ -91,7 +93,7 @@ async def test_multiple_users_creating_projects(
     end_time = asyncio.get_event_loop().time()
     
     execution_time = end_time - start_time
-    print(f"⏱️ Tempo de execução: {execution_time:.2f} segundos")
+    print(f"[TIME] Tempo de execução: {execution_time:.2f} segundos")
     
     # 4. Verificar resultados
     successful_creations = 0
@@ -100,15 +102,15 @@ async def test_multiple_users_creating_projects(
     for result in results:
         if isinstance(result, Exception):
             failed_creations += 1
-            print(f"❌ Falha na criação: {result}")
+            print(f"[ERROR] Falha na criação: {result}")
         else:
             response, user_id, project_number = result
             if response.status_code in [200, 201]:
                 successful_creations += 1
-                print(f"✅ Projeto {project_number} criado para usuário {user_id}")
+                print(f"[OK] Projeto {project_number} criado para usuário {user_id}")
             else:
                 failed_creations += 1
-                print(f"❌ Falha na criação do projeto {project_number}: {response.status_code}")
+                print(f"[ERROR] Falha na criação do projeto {project_number}: {response.status_code}")
     
     print(f"📊 Resultados: {successful_creations} sucessos, {failed_creations} falhas")
     
@@ -123,7 +125,7 @@ async def test_multiple_users_creating_projects(
     assert successful_creations > 0, "Pelo menos um projeto deveria ser criado"
     assert len(all_projects) == successful_creations, "Número de projetos deve corresponder aos criados com sucesso"
     
-    print(f"✅ Teste de criação simultânea concluído com sucesso!")
+    print(f"[OK] Teste de criação simultânea concluído com sucesso!")
 
 
 @pytest.mark.asyncio
@@ -136,9 +138,11 @@ async def test_concurrent_project_access(
     """
     
     # 1. Criar usuário e projeto
+    from app.utils.auth import hash_password
     user = User(
         email="concurrent@example.com",
-        name="Concurrent User"
+        name="Concurrent User",
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
@@ -149,22 +153,22 @@ async def test_concurrent_project_access(
         json={
             "name": "Projeto Concorrente",
             "description": "Projeto para teste de acesso simultâneo",
-            "municipio": "São Paulo",  # ✅ NOVO: campo obrigatório
-            "entidade": "Prefeitura",  # ✅ NOVO: campo obrigatório
+            "municipio": "São Paulo",  # [OK] NOVO: campo obrigatório
+            "entidade": "Prefeitura",  # [OK] NOVO: campo obrigatório
             "portfolio": "Test Portfolio",
             "vertical": "Technology",
             "product": "Software",
-            "tipo": "implantacao",  # ✅ NOVO: campo obrigatório
-            "data_inicio": "2024-01-01",  # ✅ NOVO: campo obrigatório
-            "data_fim": "2024-12-31",  # ✅ NOVO: campo obrigatório
-            "gerente_projeto_id": 1,  # ✅ NOVO: campo obrigatório
-            "gerente_portfolio_id": 1  # ✅ NOVO: campo obrigatório
+            "tipo": "implantacao",  # [OK] NOVO: campo obrigatório
+            "data_inicio": "2024-01-01",  # [OK] NOVO: campo obrigatório
+            "data_fim": "2024-12-31",  # [OK] NOVO: campo obrigatório
+            "gerente_projeto_id": 1,  # [OK] NOVO: campo obrigatório
+            "gerente_portfolio_id": 1  # [OK] NOVO: campo obrigatório
         },
         headers={"Authorization": f"Bearer mock_token_{user.id}"}
     )
     project_id = project_response.json()["id"]
     
-    print(f"✅ Projeto criado: {project_id}")
+    print(f"[OK] Projeto criado: {project_id}")
     
     # 2. Função para acessar o projeto
     async def access_project(access_number: int):
@@ -184,7 +188,7 @@ async def test_concurrent_project_access(
     end_time = asyncio.get_event_loop().time()
     
     execution_time = end_time - start_time
-    print(f"⏱️ Tempo de execução: {execution_time:.2f} segundos")
+    print(f"[TIME] Tempo de execução: {execution_time:.2f} segundos")
     
     # 4. Verificar resultados
     successful_accesses = 0
@@ -193,16 +197,16 @@ async def test_concurrent_project_access(
     for result in results:
         if isinstance(result, Exception):
             failed_accesses += 1
-            print(f"❌ Falha no acesso: {result}")
+            print(f"[ERROR] Falha no acesso: {result}")
         else:
             response, access_number = result
             if response.status_code == 200:
                 successful_accesses += 1
                 project_data = response.json()
-                print(f"✅ Acesso {access_number}: Projeto {project_data['name']}")
+                print(f"[OK] Acesso {access_number}: Projeto {project_data['name']}")
             else:
                 failed_accesses += 1
-                print(f"❌ Falha no acesso {access_number}: {response.status_code}")
+                print(f"[ERROR] Falha no acesso {access_number}: {response.status_code}")
     
     print(f"📊 Resultados: {successful_accesses} acessos bem-sucedidos, {failed_accesses} falhas")
     
@@ -210,7 +214,7 @@ async def test_concurrent_project_access(
     assert successful_accesses == 10, "Todos os 10 acessos deveriam ser bem-sucedidos"
     assert failed_accesses == 0, "Nenhum acesso deveria falhar"
     
-    print(f"✅ Teste de acesso simultâneo concluído com sucesso!")
+    print(f"[OK] Teste de acesso simultâneo concluído com sucesso!")
 
 
 @pytest.mark.asyncio
@@ -223,9 +227,11 @@ async def test_concurrent_project_updates(
     """
     
     # 1. Criar usuário e projeto
+    from app.utils.auth import hash_password
     user = User(
         email="update@example.com",
-        name="Update User"
+        name="Update User",
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
@@ -236,22 +242,22 @@ async def test_concurrent_project_updates(
         json={
             "name": "Projeto para Update",
             "description": "Projeto para teste de atualizações simultâneas",
-            "municipio": "São Paulo",  # ✅ NOVO: campo obrigatório
-            "entidade": "Prefeitura",  # ✅ NOVO: campo obrigatório
+            "municipio": "São Paulo",  # [OK] NOVO: campo obrigatório
+            "entidade": "Prefeitura",  # [OK] NOVO: campo obrigatório
             "portfolio": "Test Portfolio",
             "vertical": "Technology",
             "product": "Software",
-            "tipo": "implantacao",  # ✅ NOVO: campo obrigatório
-            "data_inicio": "2024-01-01",  # ✅ NOVO: campo obrigatório
-            "data_fim": "2024-12-31",  # ✅ NOVO: campo obrigatório
-            "gerente_projeto_id": 1,  # ✅ NOVO: campo obrigatório
-            "gerente_portfolio_id": 1  # ✅ NOVO: campo obrigatório
+            "tipo": "implantacao",  # [OK] NOVO: campo obrigatório
+            "data_inicio": "2024-01-01",  # [OK] NOVO: campo obrigatório
+            "data_fim": "2024-12-31",  # [OK] NOVO: campo obrigatório
+            "gerente_projeto_id": 1,  # [OK] NOVO: campo obrigatório
+            "gerente_portfolio_id": 1  # [OK] NOVO: campo obrigatório
         },
         headers={"Authorization": f"Bearer mock_token_{user.id}"}
     )
     project_id = project_response.json()["id"]
     
-    print(f"✅ Projeto criado: {project_id}")
+    print(f"[OK] Projeto criado: {project_id}")
     
     # 2. Função para atualizar o projeto
     async def update_project(update_number: int):
@@ -281,7 +287,7 @@ async def test_concurrent_project_updates(
     end_time = asyncio.get_event_loop().time()
     
     execution_time = end_time - start_time
-    print(f"⏱️ Tempo de execução: {execution_time:.2f} segundos")
+    print(f"[TIME] Tempo de execução: {execution_time:.2f} segundos")
     
     # 4. Verificar resultados
     successful_updates = 0
@@ -290,16 +296,16 @@ async def test_concurrent_project_updates(
     for result in results:
         if isinstance(result, Exception):
             failed_updates += 1
-            print(f"❌ Falha na atualização: {result}")
+            print(f"[ERROR] Falha na atualização: {result}")
         else:
             response, update_number = result
             if response.status_code == 200:
                 successful_updates += 1
                 project_data = response.json()
-                print(f"✅ Atualização {update_number}: Projeto {project_data['name']}")
+                print(f"[OK] Atualização {update_number}: Projeto {project_data['name']}")
             else:
                 failed_updates += 1
-                print(f"❌ Falha na atualização {update_number}: {response.status_code}")
+                print(f"[ERROR] Falha na atualização {update_number}: {response.status_code}")
     
     print(f"📊 Resultados: {successful_updates} atualizações bem-sucedidas, {failed_updates} falhas")
     
@@ -313,7 +319,7 @@ async def test_concurrent_project_updates(
     # 6. Validar integridade
     assert successful_updates > 0, "Pelo menos uma atualização deveria ser bem-sucedida"
     
-    print(f"✅ Teste de atualizações simultâneas concluído com sucesso!")
+    print(f"[OK] Teste de atualizações simultâneas concluído com sucesso!")
 
 
 @pytest.mark.asyncio
@@ -326,9 +332,11 @@ async def test_concurrent_database_operations(
     """
     
     # 1. Criar usuário
+    from app.utils.auth import hash_password
     user = User(
         email="db_ops@example.com",
-        name="DB Operations User"
+        name="DB Operations User",
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
@@ -340,22 +348,22 @@ async def test_concurrent_database_operations(
         json={
             "name": "Projeto DB Ops",
             "description": "Projeto para teste de operações simultâneas no banco",
-            "municipio": "São Paulo",  # ✅ NOVO: campo obrigatório
-            "entidade": "Prefeitura",  # ✅ NOVO: campo obrigatório
+            "municipio": "São Paulo",  # [OK] NOVO: campo obrigatório
+            "entidade": "Prefeitura",  # [OK] NOVO: campo obrigatório
             "portfolio": "Test Portfolio",
             "vertical": "Technology",
             "product": "Software",
-            "tipo": "implantacao",  # ✅ NOVO: campo obrigatório
-            "data_inicio": "2024-01-01",  # ✅ NOVO: campo obrigatório
-            "data_fim": "2024-12-31",  # ✅ NOVO: campo obrigatório
-            "gerente_projeto_id": 1,  # ✅ NOVO: campo obrigatório
-            "gerente_portfolio_id": 1  # ✅ NOVO: campo obrigatório
+            "tipo": "implantacao",  # [OK] NOVO: campo obrigatório
+            "data_inicio": "2024-01-01",  # [OK] NOVO: campo obrigatório
+            "data_fim": "2024-12-31",  # [OK] NOVO: campo obrigatório
+            "gerente_projeto_id": 1,  # [OK] NOVO: campo obrigatório
+            "gerente_portfolio_id": 1  # [OK] NOVO: campo obrigatório
         },
         headers={"Authorization": f"Bearer mock_token_{user.id}"}
     )
     project_id = project_response.json()["id"]
     
-    print(f"✅ Projeto criado: {project_id}")
+    print(f"[OK] Projeto criado: {project_id}")
     
     # 3. Função para operações simultâneas
     async def perform_db_operation(operation_number: int):
@@ -393,7 +401,7 @@ async def test_concurrent_database_operations(
     end_time = asyncio.get_event_loop().time()
     
     execution_time = end_time - start_time
-    print(f"⏱️ Tempo de execução: {execution_time:.2f} segundos")
+    print(f"[TIME] Tempo de execução: {execution_time:.2f} segundos")
     
     # 5. Verificar resultados
     successful_operations = 0
@@ -402,22 +410,22 @@ async def test_concurrent_database_operations(
     for result in results:
         if isinstance(result, Exception):
             failed_operations += 1
-            print(f"❌ Falha na operação: {result}")
+            print(f"[ERROR] Falha na operação: {result}")
         else:
             response, operation_number, operation_type = result
             if response.status_code in [200, 201]:
                 successful_operations += 1
-                print(f"✅ Operação {operation_number} ({operation_type}): Sucesso")
+                print(f"[OK] Operação {operation_number} ({operation_type}): Sucesso")
             else:
                 failed_operations += 1
-                print(f"❌ Falha na operação {operation_number} ({operation_type}): {response.status_code}")
+                print(f"[ERROR] Falha na operação {operation_number} ({operation_type}): {response.status_code}")
     
     print(f"📊 Resultados: {successful_operations} operações bem-sucedidas, {failed_operations} falhas")
     
     # 6. Validar integridade
     assert successful_operations > 0, "Pelo menos uma operação deveria ser bem-sucedida"
     
-    print(f"✅ Teste de operações simultâneas no banco concluído com sucesso!")
+    print(f"[OK] Teste de operações simultâneas no banco concluído com sucesso!")
 
 
 @pytest.mark.asyncio
@@ -437,9 +445,11 @@ async def test_system_under_load(
     
     created_users = []
     for user_data in users_data:
+        from app.utils.auth import hash_password
         user = User(
             email=user_data["email"],
-            name=user_data["name"]
+            name=user_data["name"],
+            hashed_password=hash_password("testpassword")
         )
         db_session.add(user)
         created_users.append(user)
@@ -449,7 +459,7 @@ async def test_system_under_load(
     for user in created_users:
         await db_session.refresh(user)
     
-    print(f"✅ {len(created_users)} usuários criados para teste de carga")
+    print(f"[OK] {len(created_users)} usuários criados para teste de carga")
     
     # 2. Função para operação completa
     async def perform_complete_operation(user: User, operation_number: int):
@@ -460,16 +470,16 @@ async def test_system_under_load(
                 json={
                     "name": f"Projeto Carga {operation_number}",
                     "description": f"Projeto de teste de carga {operation_number}",
-                    "municipio": "São Paulo",  # ✅ NOVO: campo obrigatório
-                    "entidade": "Prefeitura",  # ✅ NOVO: campo obrigatório
+                    "municipio": "São Paulo",  # [OK] NOVO: campo obrigatório
+                    "entidade": "Prefeitura",  # [OK] NOVO: campo obrigatório
                     "portfolio": f"Portfolio Carga {operation_number}",
                     "vertical": "Technology",
                     "product": "Software",
-                    "tipo": "implantacao",  # ✅ NOVO: campo obrigatório
-                    "data_inicio": "2024-01-01",  # ✅ NOVO: campo obrigatório
-                    "data_fim": "2024-12-31",  # ✅ NOVO: campo obrigatório
-                    "gerente_projeto_id": 1,  # ✅ NOVO: campo obrigatório
-                    "gerente_portfolio_id": 1  # ✅ NOVO: campo obrigatório
+                    "tipo": "implantacao",  # [OK] NOVO: campo obrigatório
+                    "data_inicio": "2024-01-01",  # [OK] NOVO: campo obrigatório
+                    "data_fim": "2024-12-31",  # [OK] NOVO: campo obrigatório
+                    "gerente_projeto_id": 1,  # [OK] NOVO: campo obrigatório
+                    "gerente_portfolio_id": 1  # [OK] NOVO: campo obrigatório
                 },
                 headers={"Authorization": f"Bearer mock_token_{user.id}"}
             )
@@ -528,7 +538,7 @@ async def test_system_under_load(
     end_time = asyncio.get_event_loop().time()
     
     execution_time = end_time - start_time
-    print(f"⏱️ Tempo total de execução: {execution_time:.2f} segundos")
+    print(f"[TIME] Tempo total de execução: {execution_time:.2f} segundos")
     print(f"🚀 Taxa: {len(tasks)/execution_time:.2f} operações/segundo")
     
     # 4. Verificar resultados
@@ -549,7 +559,7 @@ async def test_system_under_load(
     assert execution_time < 30, f"Teste de carga deve completar em menos de 30 segundos, levou {execution_time:.2f}s"
     assert successful_operations > len(tasks) * 0.8, f"Taxa de sucesso deve ser >80%, foi {successful_operations/len(tasks)*100:.1f}%"
     
-    print(f"✅ Teste de carga concluído com sucesso!")
+    print(f"[OK] Teste de carga concluído com sucesso!")
     print(f"   🚀 {len(tasks)} operações em {execution_time:.2f}s")
     print(f"   🚀 Taxa: {len(tasks)/execution_time:.2f} ops/s")
-    print(f"   ✅ Sucesso: {successful_operations}/{len(tasks)} ({successful_operations/len(tasks)*100:.1f}%)")
+    print(f"   [OK] Sucesso: {successful_operations}/{len(tasks)} ({successful_operations/len(tasks)*100:.1f}%)")

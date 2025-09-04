@@ -1,0 +1,180 @@
+{
+  "index_patterns": ["pm-ai-logs-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.lifecycle.name": "pm-ai-logs-policy",
+      "index.lifecycle.rollover_alias": "pm-ai-logs",
+      "index.refresh_interval": "5s",
+      "index.codec": "best_compression"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "timestamp": {
+          "type": "date"
+        },
+        "level": {
+          "type": "keyword"
+        },
+        "logger": {
+          "type": "keyword"
+        },
+        "log_message": {
+          "type": "text",
+          "analyzer": "standard"
+        },
+        "message": {
+          "type": "text",
+          "analyzer": "standard"
+        },
+        "service": {
+          "type": "keyword"
+        },
+        "service_name": {
+          "type": "keyword"
+        },
+        "environment": {
+          "type": "keyword"
+        },
+        "version": {
+          "type": "keyword"
+        },
+        "type": {
+          "type": "keyword"
+        },
+        "tags": {
+          "type": "keyword"
+        },
+        "method": {
+          "type": "keyword"
+        },
+        "path": {
+          "type": "keyword"
+        },
+        "status_code": {
+          "type": "integer"
+        },
+        "response_time": {
+          "type": "float"
+        },
+        "clientip": {
+          "type": "ip"
+        },
+        "geoip": {
+          "properties": {
+            "country_name": {
+              "type": "keyword"
+            },
+            "city_name": {
+              "type": "keyword"
+            },
+            "latitude": {
+              "type": "float"
+            },
+            "longitude": {
+              "type": "float"
+            }
+          }
+        },
+        "user_agent": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            },
+            "os": {
+              "type": "keyword"
+            },
+            "device": {
+              "type": "keyword"
+            }
+          }
+        },
+        "container": {
+          "properties": {
+            "id": {
+              "type": "keyword"
+            },
+            "name": {
+              "type": "keyword"
+            },
+            "image": {
+              "type": "keyword"
+            }
+          }
+        },
+        "docker": {
+          "properties": {
+            "container_id": {
+              "type": "keyword"
+            },
+            "container_name": {
+              "type": "keyword"
+            },
+            "container_image": {
+              "type": "keyword"
+            }
+          }
+        },
+        "kubernetes": {
+          "properties": {
+            "pod": {
+              "type": "keyword"
+            },
+            "namespace": {
+              "type": "keyword"
+            },
+            "node": {
+              "type": "keyword"
+            }
+          }
+        },
+        "error": {
+          "properties": {
+            "type": {
+              "type": "keyword"
+            },
+            "message": {
+              "type": "text"
+            },
+            "stack_trace": {
+              "type": "text"
+            }
+          }
+        },
+        "performance": {
+          "properties": {
+            "response_time": {
+              "type": "float"
+            },
+            "cpu_usage": {
+              "type": "float"
+            },
+            "memory_usage": {
+              "type": "float"
+            }
+          }
+        },
+        "security": {
+          "properties": {
+            "event_type": {
+              "type": "keyword"
+            },
+            "severity": {
+              "type": "keyword"
+            },
+            "source_ip": {
+              "type": "ip"
+            },
+            "user": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  }
+}

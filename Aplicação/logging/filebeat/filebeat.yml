@@ -1,0 +1,132 @@
+# Filebeat Configuration for PM AI MVP
+
+filebeat.inputs:
+  # Docker logs input
+  - type: container
+    enabled: true
+    paths:
+      - '/var/lib/docker/containers/*/*.log'
+    processors:
+      - add_docker_metadata:
+          host: "unix:///var/run/docker.sock"
+      - add_fields:
+          target: service
+          fields:
+            type: docker
+            environment: ${ENVIRONMENT:-development}
+
+  # Application logs input
+  - type: log
+    enabled: true
+    paths:
+      - '/var/log/app/*.log'
+    fields:
+      type: application
+      environment: ${ENVIRONMENT:-development}
+    fields_under_root: true
+    multiline.pattern: '^\d{4}-\d{2}-\d{2}'
+    multiline.negate: true
+    multiline.match: after
+
+  # Nginx logs input
+  - type: log
+    enabled: true
+    paths:
+      - '/var/log/nginx/*.log'
+    fields:
+      type: nginx
+      environment: ${ENVIRONMENT:-development}
+    fields_under_root: true
+
+  # PostgreSQL logs input
+  - type: log
+    enabled: true
+    paths:
+      - '/var/log/postgresql/*.log'
+    fields:
+      type: postgresql
+      environment: ${ENVIRONMENT:-development}
+    fields_under_root: true
+
+  # Redis logs input
+  - type: log
+    enabled: true
+    paths:
+      - '/var/log/redis/*.log'
+    fields:
+      type: redis
+      environment: ${ENVIRONMENT:-development}
+    fields_under_root: true
+
+# Processors
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+
+# Output configuration
+output.logstash:
+  hosts: ["logstash:5044"]
+  compression_level: 3
+  bulk_max_size: 1024
+  timeout: 30s
+
+# Alternative output to Elasticsearch (if needed)
+# output.elasticsearch:
+#   hosts: ["elasticsearch:9200"]
+#   index: "pm-ai-logs-%{+yyyy.MM.dd}"
+#   template.name: "pm-ai-logs"
+#   template.pattern: "pm-ai-logs-*"
+
+# Logging configuration
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /usr/share/filebeat/logs
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+
+# Monitoring configuration
+monitoring.enabled: true
+monitoring.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+
+# Setup configuration
+setup.kibana:
+  host: "kibana:5601"
+
+setup.template.settings:
+  index.number_of_shards: 1
+  index.number_of_replicas: 0
+  index.codec: best_compression
+
+# ILM configuration
+setup.ilm.enabled: true
+setup.ilm.rollover_alias: "pm-ai-logs"
+setup.ilm.pattern: "{now/d}-000001"
+setup.ilm.policy: "pm-ai-logs-policy"
+
+# Dashboard configuration
+setup.dashboards.enabled: true
+setup.dashboards.directory: /usr/share/filebeat/kibana
+
+# Module configuration
+filebeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: true
+  reload.period: 10s
+
+# Registry configuration
+filebeat.registry.path: /usr/share/filebeat/data/registry
+
+# Queue configuration
+queue.mem:
+  events: 4096
+  flush.min_events: 0
+  flush.timeout: 1s
+
+# Performance tuning
+max_procs: 0

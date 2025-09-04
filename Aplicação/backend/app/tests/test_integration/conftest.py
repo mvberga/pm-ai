@@ -9,7 +9,7 @@ def test_project_data():
         "description": "A test project for testing purposes",
         "municipio": "São Paulo",  # ✅ Campo obrigatório
         "entidade": "Prefeitura",  # ✅ Campo obrigatório
-        "portfolio": "Test Portfolio",
+        "portfolio_name": "Test Portfolio",
         "vertical": "Technology",
         "product": "Software",
         "tipo": "implantacao",  # ✅ CORRIGIDO: minúsculo

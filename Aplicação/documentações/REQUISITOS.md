@@ -308,6 +308,11 @@ async def create_project(payload: ProjectIn, session: Session) -> ProjectOut:
 ### D) Entregáveis da V1 (UI)
 - Portfolio Overview (cards + KPIs) e Timeline de entregas (resumo).
 - Projects List e Project Detail (checklists, action items, documentos, timeline simplificada).
+  - Base HTML de referência (Unificado.html):
+    - Login e Hub de Importadores
+    - Status com 3 abas (Visão Geral, Cronograma, Financeiro)
+    - Projetos com Checklist de Implantação consolidado; remoção de links por vertical na sidebar
+    - Persistência de preferências (portfólio/aba) via localStorage
 - Foundation: Header/Sidebar/Breadcrumbs; tema dark/light; kit de componentes base.
 
 ### E) Roadmap Visual (alto nível)

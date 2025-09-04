@@ -2,17 +2,19 @@ import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import ProjectDetail from '../../pages/ProjectDetail'
-import api from '../../api/client'
+import { projectsApi } from '../../api/projects'
 
-jest.mock('../../api/client', () => ({
+jest.mock('../../api/projects', () => ({
   __esModule: true,
-  default: { get: jest.fn() }
+  projectsApi: {
+    getById: jest.fn()
+  }
 }))
 
 describe('ProjectDetail - estados vazios e erro', () => {
-  it('exibe carregando e não quebra em erro de detalhes', async () => {
+  it('exibe erro ao carregar projeto', async () => {
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    api.get.mockRejectedValueOnce(new Error('falha'))
+    projectsApi.getById.mockRejectedValueOnce(new Error('falha'))
 
     render(
       <MemoryRouter initialEntries={['/projects/1']}>
@@ -22,10 +24,14 @@ describe('ProjectDetail - estados vazios e erro', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByText('Carregando...')).toBeInTheDocument()
+    // Primeiro carrega
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument()
 
-    // aguarda efeito terminar
-    await new Promise(r => setTimeout(r, 0))
+    // Depois mostra erro
+    await waitFor(() => {
+      expect(screen.getByText(/Erro ao carregar projeto/)).toBeInTheDocument()
+      expect(screen.getByText('Tentar novamente')).toBeInTheDocument()
+    })
 
     consoleSpy.mockRestore()
   })

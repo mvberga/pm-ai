@@ -1,0 +1,60 @@
+# Logstash Configuration for PM AI MVP
+
+# Node settings
+node.name: logstash
+node.roles: [ingest]
+
+# Pipeline settings
+pipeline.workers: 2
+pipeline.batch.size: 1000
+pipeline.batch.delay: 50
+
+# Queue settings
+queue.type: persisted
+queue.max_bytes: 1gb
+queue.max_events: 0
+
+# Logging settings
+log.level: info
+log.format: json
+
+# Monitoring settings
+monitoring.enabled: true
+monitoring.elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+# X-Pack settings
+xpack.management.enabled: true
+xpack.management.pipeline.id: ["main"]
+
+# HTTP settings
+http.host: 0.0.0.0
+http.port: 9600
+
+# Dead letter queue
+dead_letter_queue.enable: true
+dead_letter_queue.max_bytes: 1gb
+
+# Config reload
+config.reload.automatic: true
+config.reload.interval: 3s
+
+# JVM settings
+# These are set via environment variables in docker-compose
+
+# Performance settings
+pipeline.unsafe_shutdown: false
+pipeline.ordered: false
+
+# Plugin settings
+plugins.security.ssl.http.enabled: false
+plugins.security.ssl.transport.enabled: false
+
+# Metric settings
+metric.collect: true
+metric.interval: 10s
+
+# Slow log settings
+slowlog.threshold.warn: 2s
+slowlog.threshold.info: 1s
+slowlog.threshold.debug: 500ms
+slowlog.threshold.trace: 100ms

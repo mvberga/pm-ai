@@ -13,6 +13,10 @@ export default {
       '@babel/preset-typescript'
     ] }]
   },
+  // Transpilar módulos ESM específicos que o Jest não entende por padrão
+  transformIgnorePatterns: [
+    '/node_modules/(?!(react-error-boundary)/)'
+  ],
   moduleFileExtensions: ['js', 'jsx', 'ts', 'tsx'],
   moduleNameMapper: {
     '^.+\\.(css|less|scss)$': 'identity-obj-proxy'

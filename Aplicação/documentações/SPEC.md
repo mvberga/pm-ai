@@ -159,6 +159,10 @@ docker compose up --build
 ## 9) Roadmap de Evolução
 
 - **Fase 2:** Gantt, Kanban, histórico de eventos (reuniões, resumos, anotações), ingestão de transcrições via n8n, embeddings e `knowledge_base`.
+- **Ajuste de Navegação (Base HTML → React):**
+  - Status (SideNav): Visão Geral, Cronograma e Financeiro (consolidado) — aplicado no HTML base como referência.
+  - Projetos (SideNav): Visão Geral, Equipe de Projeto, Cliente, Produto Contratado, Cronograma, Kanban, Checklist de Implantação, Gestão de Riscos, Lições Aprendidas, Próximos Passos, Extração — aplicado no HTML base.
+  - Preferências persistidas: última aba do Status e portfólio selecionado salvos em `localStorage` — aplicado no HTML base.
 - **Fase 3:** Modelos de ML (predição de atraso, recomendação de ações/risks), RBAC, auditoria de mudanças, exportações avançadas, testes e observabilidade completa.
 
 ---
@@ -170,3 +174,5 @@ docker compose up --build
 - `pgvector` habilitado desde o início para simplificar a transição ao RAG.
 - Frontend com UI mínima e sem lib de componentes para manter leveza no MVP.
 - Governança de UI: decisões registradas em `Aplicação/documentações/adr/` (ex.: ADR-UI-0001), seguindo processo definido em `REQUISITOS.md` (seção UX/UI) e regras em `Aplicação/regras.mdc`.
+ - Governança de UI: decisões registradas em `Aplicação/documentações/adr/` (ex.: ADR-UI-0001), seguindo processo definido em `REQUISITOS.md` (seção UX/UI) e regras em `Aplicação/regras.mdc`.
+ - Layout/UX aprovado (MVP): TopBar fixa, SideNav colapsável, Breadcrumbs visível; tokens e componentes base descritos em `FRONTEND_ESTRUTURA.md`.

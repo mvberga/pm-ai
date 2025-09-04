@@ -35,7 +35,7 @@ services:
   frontend:
     build: ./frontend
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://backend:8000/api/v1}
+      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000/api/v1}
     ports:
       - "5174:5173"
     volumes:
@@ -61,7 +61,7 @@ services:
         (curl -sSf $$CYPRESS_BASE_URL >/dev/null 2>&1) && \
         (curl -sSf http://backend:8000/docs >/dev/null 2>&1) && break || sleep 2; \
       done; \
-      cypress run --config baseUrl=$$CYPRESS_BASE_URL"
+      cypress run --config baseUrl=$$CYPRESS_BASE_URL --env API_URL=http://backend:8000/api/v1"
 
 volumes:
   dbdata:

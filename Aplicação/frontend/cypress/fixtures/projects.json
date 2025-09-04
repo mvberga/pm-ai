@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "name": "Projeto Seed A",
+    "municipio": "Cidade X",
+    "valor_implantacao": 100000,
+    "valor_recorrente": 1000,
+    "recursos": 2,
+    "status": "on_track",
+    "tipo": "implantacao",
+    "data_inicio": "2025-01-01",
+    "data_fim": "2025-12-31",
+    "gerente_projeto_id": 1,
+    "gerente_portfolio_id": 1,
+    "owner_id": 1,
+    "created_at": "2025-01-01",
+    "updated_at": "2025-01-02",
+    "pending_actions_count": 1
+  }
+]
+
+

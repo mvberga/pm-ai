@@ -1,8 +1,8 @@
 # PM AI MVP - Sistema de Gestão de Projetos com IA
 
-**Status:** ✅ MVP Estabilizado + 🧪 Infraestrutura de Testes 100% Funcional  
-**Versão:** 1.0.1  
-**Última Atualização:** 29 de Agosto de 2025
+**Status:** ✅ MVP Estabilizado + 🔐 Sistema de Autenticação Corrigido  
+**Versão:** 1.2.0  
+**Última Atualização:** 03 de Setembro de 2025
 
 ---
 
@@ -17,9 +17,14 @@ docker compose up -d --build
 # Frontend: http://localhost:5174
 ```
 
-### Testes Backend
+### Testes Backend (Corrigidos)
 ```bash
 cd Aplicação/backend
+# Testes de autenticação (corrigidos)
+pytest app/tests/test_integration/test_auth_flow.py -v
+# Testes de projeto (com autenticação)
+pytest app/tests/test_integration/test_project_workflow.py -v
+# Todos os testes
 pytest -v -s
 pytest -v -s --cov=app --cov-report=term-missing --cov-report=html
 ```
@@ -44,6 +49,10 @@ cd Aplicação
 docker compose up -d --build
 cd frontend
 set CYPRESS_BASE_URL=http://localhost:5174 && npm run cypress:run
+
+:: Para executar o fluxo REAL reativado (project_real):
+:: No Cypress GUI selecione `project_real.cy.js` ou rode headless:
+set CYPRESS_BASE_URL=http://localhost:5174 && npx cypress run --spec "cypress/e2e/project_real.cy.js"
 ```
 
 ### Dicas rápidas
@@ -55,6 +64,11 @@ set CYPRESS_BASE_URL=http://localhost:5174 && npm run cypress:run
 ## 🎯 **Visão Geral**
 
 PM AI MVP é uma plataforma moderna de gestão de projetos que combina funcionalidades tradicionais de PM com recursos avançados de Inteligência Artificial. O sistema oferece visualizações interativas, análise preditiva e automação inteligente para otimizar a gestão de projetos.
+
+Atualização (Base HTML de Referência):
+- Adicionados no protótipo HTML: Login, Hub de Importadores, Status com 3 abas (Visão Geral, Cronograma, Financeiro) e Projetos com Checklist consolidado.
+- Persistência de preferências (portfólio selecionado e última aba do Status) via `localStorage`.
+- Esses ajustes orientam a migração para React/TS conforme `SPEC.md`.
 
 ---
 
@@ -90,10 +104,10 @@ PM AI MVP é uma plataforma moderna de gestão de projetos que combina funcional
 - **Testes:** pytest + pytest-asyncio (✅ 100% funcional)
 
 ### **Frontend (React)**
-- **Framework:** React 18 + TypeScript
+- **Framework:** React 18 + TypeScript + React Router
 - **Build:** Vite
-- **UI:** Custom + Material-UI
-- **State:** React Context + Hooks
+- **UI:** Design System próprio (tokens em `src/ui/tokens/colors.ts`) + componentes base (`src/ui/components/*`)
+- **State:** Hooks (Context futuramente se necessário)
 
 ### **Infraestrutura**
 - **Containerização:** Docker + Docker Compose
@@ -284,6 +298,7 @@ Aplicação/
 - **`PRÓXIMOS_PASSOS.md`**: Roadmap detalhado do projeto
 - **`CHAT_RESUMO.md`**: Resumo executivo e status atual
 - **`ESTRUTURA_PROJETO.md`**: Organização e arquitetura
+- **`FRONTEND_ESTRUTURA.md`**: UX/Layout aprovado e arquitetura do frontend
 - **`REQUISITOS.md`**: Requisitos técnicos e padrões
 
 ---

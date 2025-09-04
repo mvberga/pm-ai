@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
@@ -17,13 +17,13 @@ class ProjectType(str, Enum):
     TREINAMENTO = "treinamento"
     SUPORTE = "suporte"
 
-class ProjectIn(BaseModel):
+class ProjectBase(BaseModel):
     name: str = Field(..., description="Nome do projeto")
     description: Optional[str] = None
     municipio: str = Field(..., description="Cidade/município")
     entidade: Optional[str] = None
     chamado_jira: Optional[str] = None
-    portfolio: Optional[str] = None
+    portfolio_name: Optional[str] = None
     vertical: Optional[str] = None
     product: Optional[str] = None
     tipo: ProjectType = ProjectType.IMPLANTACAO
@@ -36,15 +36,32 @@ class ProjectIn(BaseModel):
     gerente_projeto_id: int
     gerente_portfolio_id: int
 
-class ProjectOut(ProjectIn):
+class ProjectCreate(ProjectBase):
+    pass
+
+class ProjectIn(ProjectBase):
+    pass
+
+class ProjectInDB(ProjectBase):
     id: int
     status: ProjectStatus
     owner_id: int
     created_at: datetime
     updated_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+class Project(ProjectBase):
+    id: int
+    status: ProjectStatus
+    owner_id: int
+    created_at: datetime
+    updated_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+
+class ProjectOut(Project):
+    pass
 
 
 class ProjectUpdate(BaseModel):
@@ -53,7 +70,7 @@ class ProjectUpdate(BaseModel):
     municipio: Optional[str] = None
     entidade: Optional[str] = None
     chamado_jira: Optional[str] = None
-    portfolio: Optional[str] = None
+    portfolio_name: Optional[str] = None
     vertical: Optional[str] = None
     product: Optional[str] = None
     tipo: Optional[ProjectType] = None
@@ -77,7 +94,7 @@ class ProjectMetrics(BaseModel):
 
 class ProjectFilter(BaseModel):
     municipio: Optional[str] = None
-    portfolio: Optional[str] = None
+    portfolio_name: Optional[str] = None
     vertical: Optional[str] = None
     status: Optional[ProjectStatus] = None
     gerente_projeto_id: Optional[int] = None
@@ -97,8 +114,7 @@ class ProjectTaskOut(ProjectTaskIn):
     project_id: int
     created_at: datetime
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProjectImplantadorIn(BaseModel):
     user_id: int
@@ -108,8 +124,7 @@ class ProjectImplantadorOut(ProjectImplantadorIn):
     id: int
     project_id: int
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProjectMigradorIn(BaseModel):
     user_id: int
@@ -119,5 +134,4 @@ class ProjectMigradorOut(ProjectMigradorIn):
     id: int
     project_id: int
     
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

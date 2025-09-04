@@ -1,27 +1,27 @@
-const API = Cypress.env('API') || 'http://localhost:8000/api/v1'
+const API_MATCH = '**/api/v1'
 
 describe('Fluxo de Projeto (mockado)', () => {
   it('lista projetos, abre detalhe, cria ação e grupo', () => {
     // Listagem de projetos
-    cy.intercept('GET', `${API}/projects`, {
+    cy.intercept('GET', `${API_MATCH}/projects*`, {
       statusCode: 200,
       body: [{ id: 1, name: 'Projeto Cypress' }]
     }).as('getProjects')
 
     // Detalhe do projeto
-    cy.intercept('GET', `${API}/projects/1`, {
+    cy.intercept('GET', `${API_MATCH}/projects/1*`, {
       statusCode: 200,
       body: { id: 1, name: 'Projeto Cypress', description: 'Desc' }
     }).as('getProjectDetail')
 
     // Checklist groups vazio inicialmente
-    cy.intercept('GET', `${API}/projects/1/checklist-groups`, {
+    cy.intercept('GET', `${API_MATCH}/projects/1/checklist-groups*`, {
       statusCode: 200,
       body: []
     }).as('getGroupsEmpty')
 
     // Action items vazio inicialmente
-    cy.intercept('GET', `${API}/projects/1/action-items*`, {
+    cy.intercept('GET', `${API_MATCH}/projects/1/action-items*`, {
       statusCode: 200,
       body: []
     }).as('getActionsEmpty')
@@ -37,11 +37,11 @@ describe('Fluxo de Projeto (mockado)', () => {
     cy.contains('Projeto Cypress')
 
     // Central de Ações: criar nova ação
-    cy.intercept('POST', `${API}/projects/1/action-items`, {
+    cy.intercept('POST', `${API_MATCH}/projects/1/action-items`, {
       statusCode: 201,
       body: { id: 99 }
     }).as('createAction')
-    cy.intercept('GET', `${API}/projects/1/action-items*`, {
+    cy.intercept('GET', `${API_MATCH}/projects/1/action-items*`, {
       statusCode: 200,
       body: [{ id: 99, title: 'Ação Teste', type: 'Ação Pontual' }]
     }).as('getActionsAfter')
@@ -61,11 +61,11 @@ describe('Fluxo de Projeto (mockado)', () => {
 
     // Checklist: criar novo grupo e adicionar item
     cy.contains('Checklist').click()
-    cy.intercept('POST', `${API}/projects/1/checklist-groups`, {
+    cy.intercept('POST', `${API_MATCH}/projects/1/checklist-groups`, {
       statusCode: 201,
       body: { id: 10, name: 'Grupo E2E' }
     }).as('createGroup')
-    cy.intercept('GET', `${API}/projects/1/checklist-groups`, {
+    cy.intercept('GET', `${API_MATCH}/projects/1/checklist-groups*`, {
       statusCode: 200,
       body: [{ id: 10, name: 'Grupo E2E' }]
     }).as('getGroupsAfter')
@@ -76,7 +76,7 @@ describe('Fluxo de Projeto (mockado)', () => {
     cy.wait('@getGroupsAfter')
     cy.contains('Grupo E2E')
 
-    cy.intercept('POST', `${API}/checklist-groups/10/items`, {
+    cy.intercept('POST', `${API_MATCH}/checklist-groups/10/items`, {
       statusCode: 201,
       body: { id: 100 }
     }).as('createItem')

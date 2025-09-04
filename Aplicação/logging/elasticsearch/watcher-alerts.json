@@ -1,0 +1,291 @@
+{
+  "watches": [
+    {
+      "id": "pm-ai-error-alert",
+      "name": "PM AI MVP - Error Rate Alert",
+      "description": "Alert when error rate exceeds threshold",
+      "trigger": {
+        "schedule": {
+          "interval": "1m"
+        }
+      },
+      "input": {
+        "search": {
+          "request": {
+            "search_type": "query_then_fetch",
+            "indices": ["pm-ai-logs-*"],
+            "body": {
+              "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": "now-5m"
+                        }
+                      }
+                    },
+                    {
+                      "term": {
+                        "tags": "error"
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "error_count": {
+                  "value_count": {
+                    "field": "_id"
+                  }
+                },
+                "total_count": {
+                  "value_count": {
+                    "field": "_id"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "condition": {
+        "compare": {
+          "ctx.payload.aggregations.error_count.value": {
+            "gt": 10
+          }
+        }
+      },
+      "actions": {
+        "send_alert": {
+          "webhook": {
+            "scheme": "http",
+            "host": "webhook.site",
+            "port": 80,
+            "method": "post",
+            "path": "/your-webhook-endpoint",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"text\":\"PM AI MVP Alert: High error rate detected - {{ctx.payload.aggregations.error_count.value}} errors in the last 5 minutes\"}"
+          }
+        }
+      }
+    },
+    {
+      "id": "pm-ai-response-time-alert",
+      "name": "PM AI MVP - Response Time Alert",
+      "description": "Alert when response time exceeds threshold",
+      "trigger": {
+        "schedule": {
+          "interval": "2m"
+        }
+      },
+      "input": {
+        "search": {
+          "request": {
+            "search_type": "query_then_fetch",
+            "indices": ["pm-ai-logs-*"],
+            "body": {
+              "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": "now-5m"
+                        }
+                      }
+                    },
+                    {
+                      "exists": {
+                        "field": "response_time"
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "avg_response_time": {
+                  "avg": {
+                    "field": "response_time"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "condition": {
+        "compare": {
+          "ctx.payload.aggregations.avg_response_time.value": {
+            "gt": 2000
+          }
+        }
+      },
+      "actions": {
+        "send_alert": {
+          "webhook": {
+            "scheme": "http",
+            "host": "webhook.site",
+            "port": 80,
+            "method": "post",
+            "path": "/your-webhook-endpoint",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"text\":\"PM AI MVP Alert: High response time detected - {{ctx.payload.aggregations.avg_response_time.value}}ms average in the last 5 minutes\"}"
+          }
+        }
+      }
+    },
+    {
+      "id": "pm-ai-service-down-alert",
+      "name": "PM AI MVP - Service Down Alert",
+      "description": "Alert when a service stops sending logs",
+      "trigger": {
+        "schedule": {
+          "interval": "5m"
+        }
+      },
+      "input": {
+        "search": {
+          "request": {
+            "search_type": "query_then_fetch",
+            "indices": ["pm-ai-logs-*"],
+            "body": {
+              "query": {
+                "range": {
+                  "@timestamp": {
+                    "gte": "now-10m"
+                  }
+                }
+              },
+              "aggs": {
+                "services": {
+                  "terms": {
+                    "field": "service_name.keyword",
+                    "size": 10
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "condition": {
+        "script": {
+          "source": "return ctx.payload.aggregations.services.buckets.size() < 4"
+        }
+      },
+      "actions": {
+        "send_alert": {
+          "webhook": {
+            "scheme": "http",
+            "host": "webhook.site",
+            "port": 80,
+            "method": "post",
+            "path": "/your-webhook-endpoint",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"text\":\"PM AI MVP Alert: Service down detected - Only {{ctx.payload.aggregations.services.buckets.size()}} services reporting logs\"}"
+          }
+        }
+      }
+    },
+    {
+      "id": "pm-ai-security-alert",
+      "name": "PM AI MVP - Security Alert",
+      "description": "Alert on security-related events",
+      "trigger": {
+        "schedule": {
+          "interval": "1m"
+        }
+      },
+      "input": {
+        "search": {
+          "request": {
+            "search_type": "query_then_fetch",
+            "indices": ["pm-ai-logs-*"],
+            "body": {
+              "query": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "@timestamp": {
+                          "gte": "now-5m"
+                        }
+                      }
+                    },
+                    {
+                      "bool": {
+                        "should": [
+                          {
+                            "term": {
+                              "status_code": 401
+                            }
+                          },
+                          {
+                            "term": {
+                              "status_code": 403
+                            }
+                          },
+                          {
+                            "term": {
+                              "status_code": 429
+                            }
+                          },
+                          {
+                            "wildcard": {
+                              "log_message": "*unauthorized*"
+                            }
+                          },
+                          {
+                            "wildcard": {
+                              "log_message": "*forbidden*"
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              "aggs": {
+                "security_events": {
+                  "value_count": {
+                    "field": "_id"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "condition": {
+        "compare": {
+          "ctx.payload.aggregations.security_events.value": {
+            "gt": 5
+          }
+        }
+      },
+      "actions": {
+        "send_alert": {
+          "webhook": {
+            "scheme": "http",
+            "host": "webhook.site",
+            "port": 80,
+            "method": "post",
+            "path": "/your-webhook-endpoint",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": "{\"text\":\"PM AI MVP Security Alert: {{ctx.payload.aggregations.security_events.value}} security events detected in the last 5 minutes\"}"
+          }
+        }
+      }
+    }
+  ]
+}

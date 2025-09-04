@@ -13,7 +13,6 @@ async def list_action_items(db: Session):
     return res.scalars().all()
 
 @router.post("/action-items", response_model=ActionItemOut, status_code=201)
-@router.post("/action-items/", response_model=ActionItemOut, status_code=201)
 async def create_action_item(payload: ActionItemIn, db: Session, request: Request):
     action_item = ActionItem(**payload.model_dump())
     lock = getattr(request.app.state, "db_write_lock", None)

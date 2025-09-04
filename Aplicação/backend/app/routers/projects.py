@@ -14,10 +14,10 @@ import asyncio
 
 router = APIRouter()
 
-@router.get("", response_model=list[ProjectOut])
+@router.get("/", response_model=list[ProjectOut])
 async def list_projects(
     db: Session,
-    current_user: OptionalUser = None,
+    current_user: CurrentUser,
     municipio: Optional[str] = Query(None),
     portfolio: Optional[str] = Query(None),
     vertical: Optional[str] = Query(None),
@@ -46,7 +46,7 @@ async def list_projects(
     return res.scalars().all()
 
 @router.get("/metrics", response_model=ProjectMetrics)
-async def get_project_metrics(db: Session):
+async def get_project_metrics(db: Session, current_user: CurrentUser):
     """Retorna métricas agregadas do portfólio"""
     # Total de projetos
     total_projects = await db.scalar(select(func.count(Project.id)))
@@ -72,9 +72,9 @@ async def get_project_metrics(db: Session):
     
     # Projetos por portfólio
     portfolio_counts = await db.execute(
-        select(Project.portfolio, func.count(Project.id))
-        .where(Project.portfolio.isnot(None))
-        .group_by(Project.portfolio)
+        select(Project.portfolio_name, func.count(Project.id))
+        .where(Project.portfolio_name.isnot(None))
+        .group_by(Project.portfolio_name)
     )
     projects_by_portfolio = {portfolio: count for portfolio, count in portfolio_counts}
     
@@ -88,8 +88,8 @@ async def get_project_metrics(db: Session):
         projects_by_portfolio=projects_by_portfolio
     )
 
-@router.post("", response_model=ProjectOut)
-async def create_project(payload: ProjectIn, db: Session, request: Request):
+@router.post("/", response_model=ProjectOut, status_code=201)
+async def create_project(payload: ProjectIn, db: Session, current_user: CurrentUser, request: Request):
     """Cria um novo projeto"""
     project = Project(**payload.model_dump(), owner_id=1)  # TODO: take from auth context
     # Lock específico do app, criado no loop atual
@@ -113,7 +113,7 @@ async def create_project(payload: ProjectIn, db: Session, request: Request):
         return project
 
 @router.get("/{project_id}", response_model=ProjectOut)
-async def get_project(project_id: int, db: Session):
+async def get_project(project_id: int, db: Session, current_user: CurrentUser):
     """Retorna um projeto específico"""
     res = await db.execute(select(Project).where(Project.id == project_id))
     project = res.scalar_one_or_none()
@@ -122,7 +122,7 @@ async def get_project(project_id: int, db: Session):
     return project
 
 @router.delete("/{project_id}", status_code=204)
-async def delete_project(project_id: int, db: Session, request: Request):
+async def delete_project(project_id: int, db: Session, current_user: CurrentUser, request: Request):
     """Remove um projeto e seus relacionamentos em cascata"""
     write_lock = getattr(request.app.state, "db_write_lock", None)
     if write_lock is None:
@@ -142,7 +142,7 @@ async def delete_project(project_id: int, db: Session, request: Request):
         return None
 
 @router.put("/{project_id}", response_model=ProjectOut)
-async def update_project(project_id: int, payload: ProjectUpdate, db: Session, request: Request):
+async def update_project(project_id: int, payload: ProjectUpdate, db: Session, current_user: CurrentUser, request: Request):
     """Atualiza um projeto existente"""
     write_lock = getattr(request.app.state, "db_write_lock", None)
     if write_lock is None:

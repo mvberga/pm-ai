@@ -24,7 +24,7 @@ from app.models.action_item import ActionItem
 
 @pytest.mark.asyncio
 async def test_complete_project_workflow(
-    client: AsyncClient,
+    client_with_auth: AsyncClient,
     db_session: AsyncSession,
     test_user_data: dict,
     test_project_data: dict
@@ -34,33 +34,35 @@ async def test_complete_project_workflow(
     """
     
     # 1. Criar usuário no banco
+    from app.utils.auth import hash_password
     user = User(
         email=test_user_data["email"],
-        name=test_user_data["name"]
+        name=test_user_data["name"],
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
     await db_session.refresh(user)
     
-    print(f"✅ Usuário criado: {user.id} - {user.email}")
+    print(f"[OK] Usuario criado: {user.id} - {user.email}")
     
     # 2. Simular autenticação (mock do Google OAuth)
     # Em produção, isso seria um token JWT real
     auth_headers = {"Authorization": f"Bearer mock_token_{user.id}"}
     
     # 3. Criar projeto via API
-    project_response = await client.post(
+    project_response = await client_with_auth.post(
         "/api/v1/projects",
         json=test_project_data,
         headers=auth_headers
     )
     
-    # ✅ CORRIGIR: Aceitar tanto 200 quanto 201 para criação
+    # [OK] CORRIGIR: Aceitar tanto 200 quanto 201 para criação
     assert project_response.status_code in [200, 201], f"Erro ao criar projeto: {project_response.text}"
     project_data = project_response.json()
     project_id = project_data["id"]
     
-    print(f"✅ Projeto criado: {project_id} - {project_data['name']}")
+    print(f"[OK] Projeto criado: {project_id} - {project_data['name']}")
     
     # 4. Verificar se o projeto foi criado no banco
     project_query = select(Project).where(Project.id == project_id)
@@ -69,7 +71,7 @@ async def test_complete_project_workflow(
     
     assert project.name == test_project_data["name"]
     assert project.description == test_project_data["description"]
-    assert project.portfolio == test_project_data["portfolio"]
+    assert project.portfolio_name == test_project_data["portfolio_name"]
     
     # 5. Criar checklist via API
     checklist_data = {
@@ -78,18 +80,18 @@ async def test_complete_project_workflow(
         "project_id": project_id
     }
     
-    checklist_response = await client.post(
+    checklist_response = await client_with_auth.post(
         "/api/v1/checklists",
         json=checklist_data,
         headers=auth_headers
     )
     
-    # ✅ CORRIGIR: Aceitar tanto 200 quanto 201 para criação
+    # [OK] CORRIGIR: Aceitar tanto 200 quanto 201 para criação
     assert checklist_response.status_code in [200, 201], f"Erro ao criar checklist: {checklist_response.text}"
     checklist_data_response = checklist_response.json()
     checklist_id = checklist_data_response["id"]
     
-    print(f"✅ Checklist criado: {checklist_id} - {checklist_data_response['name']}")
+    print(f"[OK] Checklist criado: {checklist_id} - {checklist_data_response['name']}")
     
     # 6. Verificar se o checklist foi criado no banco
     checklist_query = select(ChecklistGroup).where(ChecklistGroup.id == checklist_id)
@@ -106,22 +108,22 @@ async def test_complete_project_workflow(
         "type": "action",
         "priority": "high",
         "project_id": project_id,
-        "assignee_id": user.id,  # ✅ ADICIONADO: campo obrigatório
-        "status": "pending"      # ✅ ADICIONADO: campo obrigatório
+        "assignee_id": user.id,  # [OK] ADICIONADO: campo obrigatório
+        "status": "pending"      # [OK] ADICIONADO: campo obrigatório
     }
     
-    action_item_response = await client.post(
+    action_item_response = await client_with_auth.post(
         "/api/v1/action-items",
         json=action_item_data,
         headers=auth_headers
     )
     
-    # ✅ CORRIGIR: Aceitar tanto 200 quanto 201 para criação
+    # [OK] CORRIGIR: Aceitar tanto 200 quanto 201 para criação
     assert action_item_response.status_code in [200, 201], f"Erro ao criar action item: {action_item_response.text}"
     action_item_data_response = action_item_response.json()
     action_item_id = action_item_data_response["id"]
     
-    print(f"✅ Action Item criado: {action_item_id} - {action_item_data_response['title']}")
+    print(f"[OK] Action Item criado: {action_item_id} - {action_item_data_response['title']}")
     
     # 8. Verificar se o action item foi criado no banco
     action_item_query = select(ActionItem).where(ActionItem.id == action_item_id)
@@ -138,7 +140,7 @@ async def test_complete_project_workflow(
     # Verificar se o projeto está relacionado ao usuário (via project_members)
     # Nota: Esta verificação depende da implementação específica do modelo Project
     
-    print(f"✅ Fluxo completo validado com sucesso!")
+    print(f"[OK] Fluxo completo validado com sucesso!")
     print(f"   📊 Usuário: {user.id}")
     print(f"   📊 Projeto: {project.id}")
     print(f"   📊 Checklist: {checklist.id}")
@@ -157,16 +159,18 @@ async def test_project_with_multiple_checklists(
     """
     
     # 1. Criar usuário
+    from app.utils.auth import hash_password
     user = User(
         email=test_user_data["email"],
-        name=test_user_data["name"]
+        name=test_user_data["name"],
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
     await db_session.refresh(user)
     
     # 2. Criar projeto
-    project_response = await client.post(
+    project_response = await client_with_auth.post(
         "/api/v1/projects",
         json=test_project_data,
         headers={"Authorization": f"Bearer mock_token_{user.id}"}
@@ -182,12 +186,12 @@ async def test_project_with_multiple_checklists(
     
     created_checklists = []
     for checklist_data in checklists_data:
-        response = await client.post(
+        response = await client_with_auth.post(
             "/api/v1/checklists",
             json=checklist_data,
             headers={"Authorization": f"Bearer mock_token_{user.id}"}
         )
-        # ✅ CORRIGIR: Aceitar tanto 200 quanto 201 para criação
+        # [OK] CORRIGIR: Aceitar tanto 200 quanto 201 para criação
         assert response.status_code in [200, 201]
         created_checklists.append(response.json())
     
@@ -201,7 +205,7 @@ async def test_project_with_multiple_checklists(
     
     assert len(checklists) == 3
     
-    print(f"✅ Projeto com múltiplos checklists validado: {len(checklists)} checklists criados")
+    print(f"[OK] Projeto com múltiplos checklists validado: {len(checklists)} checklists criados")
 
 
 @pytest.mark.asyncio
@@ -216,15 +220,17 @@ async def test_project_with_multiple_action_items(
     """
     
     # 1. Criar usuário e projeto
+    from app.utils.auth import hash_password
     user = User(
         email=test_user_data["email"],
-        name=test_user_data["name"]
+        name=test_user_data["name"],
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
     await db_session.refresh(user)
     
-    project_response = await client.post(
+    project_response = await client_with_auth.post(
         "/api/v1/projects",
         json=test_project_data,
         headers={"Authorization": f"Bearer mock_token_{user.id}"}
@@ -241,7 +247,7 @@ async def test_project_with_multiple_action_items(
     
     created_action_items = []
     for action_item_data in action_items_data:
-        response = await client.post(
+        response = await client_with_auth.post(
             "/api/v1/action-items",
             json=action_item_data,
             headers={"Authorization": f"Bearer mock_token_{user.id}"}
@@ -265,7 +271,7 @@ async def test_project_with_multiple_action_items(
     assert "medium" in priorities
     assert "low" in priorities
     
-    print(f"✅ Projeto com múltiplos action items validado: {len(action_items)} itens criados")
+    print(f"[OK] Projeto com múltiplos action items validado: {len(action_items)} itens criados")
 
 
 @pytest.mark.asyncio
@@ -280,15 +286,17 @@ async def test_project_deletion_cascade(
     """
     
     # 1. Criar usuário, projeto, checklist e action items
+    from app.utils.auth import hash_password
     user = User(
         email=test_user_data["email"],
-        name=test_user_data["name"]
+        name=test_user_data["name"],
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
     await db_session.refresh(user)
     
-    project_response = await client.post(
+    project_response = await client_with_auth.post(
         "/api/v1/projects",
         json=test_project_data,
         headers={"Authorization": f"Bearer mock_token_{user.id}"}
@@ -296,14 +304,14 @@ async def test_project_deletion_cascade(
     project_id = project_response.json()["id"]
     
     # Criar checklist
-    checklist_response = await client.post(
+    checklist_response = await client_with_auth.post(
         "/api/v1/checklists",
         json={"name": "Test Checklist", "description": "Test", "project_id": project_id},
         headers={"Authorization": f"Bearer mock_token_{user.id}"}
     )
     
     # Criar action item
-    action_item_response = await client.post(
+    action_item_response = await client_with_auth.post(
         "/api/v1/action-items",
         json={"title": "Test Action", "description": "Test", "type": "action", "priority": "medium", "project_id": project_id, "assignee_id": user.id, "status": "pending"},
         headers={"Authorization": f"Bearer mock_token_{user.id}"}
@@ -314,7 +322,7 @@ async def test_project_deletion_cascade(
     assert action_item_response.status_code == 201
     
     # 3. Deletar projeto
-    delete_response = await client.delete(
+    delete_response = await client_with_auth.delete(
         f"/api/v1/projects/{project_id}",
         headers={"Authorization": f"Bearer mock_token_{user.id}"}
     )
@@ -323,5 +331,5 @@ async def test_project_deletion_cascade(
     # 4. Verificar se checklist e action items foram removidos (cascade)
     # Nota: Depende da configuração de cascade no modelo Project
     
-    print(f"✅ Deleção em cascata validada para projeto {project_id}")
+    print(f"[OK] Deleção em cascata validada para projeto {project_id}")
     

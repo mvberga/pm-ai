@@ -1,7 +1,7 @@
 # Status dos Testes de Backend - PM AI MVP
 
 **Data de Criação:** 28 de Agosto de 2025  
-**Última Atualização:** 29 de Agosto de 2025  
+**Última Atualização:** 2 de Setembro de 2025  
 **Status Atual:** ✅ Suíte de Backend Estável (Unit + Integração + Carga)  
 **Próxima Ação:** Iniciar testes de Frontend e preparar E2E
 
@@ -84,11 +84,9 @@ async def db_session() -> AsyncSession:
 ## 🎯 **Status Atual dos Testes**
 
 ### **📊 Métricas Atuais**
-- **Unitários**: 54/54 ✅
-- **Integração Backend**: 19/19 ✅
-- **Performance/Carga**: 100% ✅ (30 ops E2E com 100% sucesso)
-- **Cobertura**: 95%+ (estimado)
-- **Tempo de Execução**: ~15-20s
+- **Suítes**: 79 testes passando ✅ (0 falhas)
+- **Cobertura** (coverage.py): 90% (2185/2422 linhas)
+- **Tempo de Execução**: ~34s
 
 ### **📁 Estrutura de Arquivos de Teste**
 ```

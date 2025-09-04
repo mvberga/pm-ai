@@ -40,6 +40,7 @@ O erro `sqlalchemy.exc.OperationalError: no such table: projects` foi resolvido 
 - Componentes em `Aplicação/frontend/src/components/`
 - Padrões: componentes reutilizáveis, responsivos, tratamento de erros
 - Integração: REST API via Axios; estado com hooks/Context
+ - Referência visual (HTML): `Backlog/frontend v3/Unificado.html` — Login, Hub de Importadores, Status (3 abas), Projetos com Checklist consolidado; persistência de portfólio/aba via localStorage.
 
 ### Banco de Dados
 - ORM: SQLAlchemy 2.0 assíncrono

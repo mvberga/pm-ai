@@ -65,4 +65,33 @@ describe('ActionItems', () => {
       expect(screen.getByText('Nova Ação')).toBeInTheDocument()
     })
   })
+
+  it('não adiciona ação quando título é cancelado', async () => {
+    api.get.mockResolvedValueOnce({ data: [] })
+
+    jest.spyOn(window, 'prompt').mockReturnValue(null) // Simula cancelar
+
+    render(<ActionItems projectId={projectId} />)
+
+    fireEvent.click(screen.getByText('+ Nova Ação'))
+
+    await waitFor(() => {
+      expect(api.post).not.toHaveBeenCalled()
+    })
+  })
+
+  it('trata erro na listagem de itens', async () => {
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    api.get.mockRejectedValueOnce(new Error('Erro na API'))
+
+    render(<ActionItems projectId={projectId} />)
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error))
+    })
+
+    consoleSpy.mockRestore()
+  })
+
+
 })

@@ -32,9 +32,11 @@ async def test_complete_checklist_workflow(
     """
     
     # 1. Criar usuário e projeto
+    from app.utils.auth import hash_password
     user = User(
         email=test_user_data["email"],
-        name=test_user_data["name"]
+        name=test_user_data["name"],
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
@@ -47,7 +49,7 @@ async def test_complete_checklist_workflow(
     )
     project_id = project_response.json()["id"]
     
-    print(f"✅ Usuário e projeto criados: {user.id}, {project_id}")
+    print(f"[OK] Usuário e projeto criados: {user.id}, {project_id}")
     
     # 2. Criar grupo de checklist
     checklist_group_data = {
@@ -66,7 +68,7 @@ async def test_complete_checklist_workflow(
     checklist_data = checklist_response.json()
     checklist_id = checklist_data["id"]
     
-    print(f"✅ Checklist criado: {checklist_id}")
+    print(f"[OK] Checklist criado: {checklist_id}")
     
     # 3. Criar múltiplos itens de checklist
     checklist_items_data = [
@@ -112,12 +114,12 @@ async def test_complete_checklist_workflow(
             
             if item_response.status_code == 201:
                 created_items.append(item_response.json())
-                print(f"✅ Item de checklist criado: {item_response.json()['title']}")
+                print(f"[OK] Item de checklist criado: {item_response.json()['title']}")
             else:
-                print(f"⚠️ Endpoint de checklist items retornou {item_response.status_code}")
+                print(f"[WARN] Endpoint de checklist items retornou {item_response.status_code}")
                 
         except Exception as e:
-            print(f"ℹ️ Endpoint de checklist items não implementado ainda: {e}")
+            print(f"[INFO] Endpoint de checklist items não implementado ainda: {e}")
             # Simular criação para continuar o teste
             break
     
@@ -129,7 +131,7 @@ async def test_complete_checklist_workflow(
     assert checklist.name == checklist_group_data["name"]
     assert checklist.project_id == project_id
     
-    print(f"✅ Checklist validado no banco: {checklist.name}")
+    print(f"[OK] Checklist validado no banco: {checklist.name}")
     
     # 5. Verificar relacionamento com projeto
     project_query = select(Project).where(Project.id == project_id)
@@ -138,7 +140,7 @@ async def test_complete_checklist_workflow(
     
     assert project.id == project_id
     
-    print(f"✅ Relacionamento projeto-checklist validado")
+    print(f"[OK] Relacionamento projeto-checklist validado")
 
 
 @pytest.mark.asyncio
@@ -153,9 +155,11 @@ async def test_checklist_with_different_types(
     """
     
     # 1. Criar usuário e projeto
+    from app.utils.auth import hash_password
     user = User(
         email=test_user_data["email"],
-        name=test_user_data["name"]
+        name=test_user_data["name"],
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
@@ -192,7 +196,7 @@ async def test_checklist_with_different_types(
             "checklist_group_id": checklist_id
         }
         
-        print(f"ℹ️ Testando criação de item tipo: {item_type}")
+        print(f"[INFO] Testando criação de item tipo: {item_type}")
         
         # Nota: Este endpoint pode não existir ainda
         try:
@@ -203,14 +207,14 @@ async def test_checklist_with_different_types(
             )
             
             if item_response.status_code == 201:
-                print(f"✅ Item tipo {item_type} criado com sucesso")
+                print(f"[OK] Item tipo {item_type} criado com sucesso")
             else:
-                print(f"⚠️ Falha ao criar item tipo {item_type}: {item_response.status_code}")
+                print(f"[WARN] Falha ao criar item tipo {item_type}: {item_response.status_code}")
                 
         except Exception as e:
-            print(f"ℹ️ Endpoint não implementado para item tipo {item_type}: {e}")
+            print(f"[INFO] Endpoint não implementado para item tipo {item_type}: {e}")
     
-    print(f"✅ Teste de tipos de checklist concluído")
+    print(f"[OK] Teste de tipos de checklist concluído")
 
 
 @pytest.mark.asyncio
@@ -225,9 +229,11 @@ async def test_checklist_validation_workflow(
     """
     
     # 1. Criar usuário e projeto
+    from app.utils.auth import hash_password
     user = User(
         email=test_user_data["email"],
-        name=test_user_data["name"]
+        name=test_user_data["name"],
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
@@ -259,7 +265,7 @@ async def test_checklist_validation_workflow(
         {"title": "Documentação técnica", "type": "documentation", "required": True}
     ]
     
-    print(f"ℹ️ Simulando criação de {len(required_items)} itens obrigatórios")
+    print(f"[INFO] Simulando criação de {len(required_items)} itens obrigatórios")
     
     # 4. Verificar se o checklist está válido
     # Em um sistema real, isso verificaria se todos os itens obrigatórios estão completos
@@ -271,7 +277,7 @@ async def test_checklist_validation_workflow(
     assert checklist.name == "Checklist de Validação"
     assert checklist.project_id == project_id
     
-    print(f"✅ Checklist de validação criado e validado: {checklist.name}")
+    print(f"[OK] Checklist de validação criado e validado: {checklist.name}")
 
 
 @pytest.mark.asyncio
@@ -286,9 +292,11 @@ async def test_checklist_completion_status(
     """
     
     # 1. Criar usuário e projeto
+    from app.utils.auth import hash_password
     user = User(
         email=test_user_data["email"],
-        name=test_user_data["name"]
+        name=test_user_data["name"],
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
@@ -325,11 +333,11 @@ async def test_checklist_completion_status(
     
     progress_percentage = (completed_items / total_items * 100) if total_items > 0 else 0
     
-    print(f"✅ Checklist criado: {checklist.name}")
+    print(f"[OK] Checklist criado: {checklist.name}")
     print(f"📊 Progresso: {completed_items}/{total_items} ({progress_percentage:.1f}%)")
     
     # 5. Verificar se o checklist está ativo
     assert checklist.name == "Checklist de Status"
     assert checklist.project_id == project_id
     
-    print(f"✅ Status de checklist validado com sucesso")
+    print(f"[OK] Status de checklist validado com sucesso")

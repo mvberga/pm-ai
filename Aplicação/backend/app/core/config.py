@@ -4,7 +4,7 @@ import os
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://pmapp:pmapp@db:5432/pmdb"
+    DATABASE_URL: str = "sqlite+aiosqlite:///./pmdb.db"
     
     # Security
     SECRET_KEY: str = "devsecret"

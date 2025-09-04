@@ -5,8 +5,12 @@ from fastapi import HTTPException, status, Depends, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.core.config import settings
 import logging
+from passlib.context import CryptContext
 
 logger = logging.getLogger(__name__)
+
+# Password hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Security scheme (auto_error=False para podermos padronizar 401 em vez de 403 quando ausente)
 security = HTTPBearer(auto_error=False)
@@ -78,11 +82,9 @@ async def decode_access_token(
     return verify_token(token)
 
 def hash_password(password: str) -> str:
-    """Hash password using bcrypt (placeholder for future implementation)"""
-    # TODO: Implement proper password hashing with bcrypt
-    return password
+    """Hash password using bcrypt"""
+    return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify password against hash (placeholder for future implementation)"""
-    # TODO: Implement proper password verification with bcrypt
-    return plain_password == hashed_password
+    """Verify password against hash"""
+    return pwd_context.verify(plain_password, hashed_password)

@@ -16,7 +16,20 @@ export default function ActionItems({ projectId }) {
   }
 
   useEffect(() => {
-    fetchItems()
+    let cancelled = false
+    const q = filterType ? `?type=${encodeURIComponent(filterType)}` : ''
+    api
+      .get(`/projects/${projectId}/action-items${q}`)
+      .then(res => {
+        if (!cancelled) setItems(res.data)
+      })
+      .catch(err => {
+        if (!cancelled) console.error(err)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [projectId, filterType])
 
   const addItem = async () => {

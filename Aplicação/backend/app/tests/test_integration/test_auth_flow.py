@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.models.user import User
+from app.utils.auth import hash_password
 
 
 @pytest.mark.asyncio
@@ -30,13 +31,14 @@ async def test_complete_auth_flow(
     # 1. Criar usuário no banco
     user = User(
         email=test_user_data["email"],
-        name=test_user_data["name"]
+        name=test_user_data["name"],
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
     await db_session.refresh(user)
     
-    print(f"✅ Usuário criado: {user.id} - {user.email}")
+    print(f"[OK] Usuario criado: {user.id} - {user.email}")
     
     # 2. Simular login com Google OAuth
     # Em produção, isso seria uma chamada real para o Google
@@ -60,7 +62,7 @@ async def test_complete_auth_flow(
     assert login_response_data["user"]["email"] == test_user_data["email"]
     assert login_response_data["user"]["name"] == test_user_data["name"]
     
-    print(f"✅ Login realizado com sucesso para: {login_response_data['user']['email']}")
+    print(f"[OK] Login realizado com sucesso para: {login_response_data['user']['email']}")
     
     # 3. Simular obtenção de token de acesso
     # Em produção, isso seria um JWT real
@@ -75,7 +77,7 @@ async def test_complete_auth_flow(
     # Verificar se o acesso foi permitido
     assert projects_response.status_code == 200, f"Erro ao acessar projetos: {projects_response.text}"
     
-    print(f"✅ Acesso a recurso protegido validado")
+    print(f"[OK] Acesso a recurso protegido validado")
     
     # 5. Verificar se o usuário está autenticado no banco
     user_query = select(User).where(User.email == test_user_data["email"])
@@ -85,7 +87,7 @@ async def test_complete_auth_flow(
     assert authenticated_user.id == user.id
     assert authenticated_user.email == test_user_data["email"]
     
-    print(f"✅ Usuário autenticado validado no banco: {authenticated_user.id}")
+    print(f"[OK] Usuario autenticado validado no banco: {authenticated_user.id}")
 
 
 @pytest.mark.asyncio
@@ -108,7 +110,7 @@ async def test_auth_with_invalid_token(
     # Deve retornar erro de autenticação
     assert projects_response.status_code == 401, "Deveria retornar 401 para token inválido"
     
-    print(f"✅ Acesso negado com token inválido validado")
+    print(f"[OK] Acesso negado com token invalido validado")
 
 
 @pytest.mark.asyncio
@@ -127,7 +129,7 @@ async def test_auth_without_token(
     # Validamos que NÃO é retornado 5xx e aceitamos 200 (público) ou 401 (protegido), conforme configuração.
     assert projects_response.status_code in (200, 401), f"Status inesperado sem token: {projects_response.status_code}"
     
-    print(f"✅ Acesso negado sem token validado")
+    print(f"[OK] Acesso negado sem token validado")
 
 
 @pytest.mark.asyncio
@@ -167,7 +169,7 @@ async def test_user_registration_flow(
     assert created_user.email == new_user_data["email"]
     assert created_user.name == new_user_data["name"]
     
-    print(f"✅ Novo usuário registrado automaticamente: {created_user.id}")
+    print(f"[OK] Novo usuario registrado automaticamente: {created_user.id}")
 
 
 @pytest.mark.asyncio
@@ -185,7 +187,8 @@ async def test_concurrent_auth_requests(
     # 1. Criar usuário
     user = User(
         email=test_user_data["email"],
-        name=test_user_data["name"]
+        name=test_user_data["name"],
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
@@ -208,7 +211,7 @@ async def test_concurrent_auth_requests(
     for i, response in enumerate(responses):
         assert response.status_code == 200, f"Requisição {i+1} falhou: {response.text}"
     
-    print(f"✅ {len(responses)} requisições de autenticação simultâneas processadas com sucesso")
+    print(f"[OK] {len(responses)} requisicoes de autenticacao simultaneas processadas com sucesso")
 
 
 @pytest.mark.asyncio
@@ -224,7 +227,8 @@ async def test_auth_token_refresh(
     # 1. Criar usuário
     user = User(
         email=test_user_data["email"],
-        name=test_user_data["name"]
+        name=test_user_data["name"],
+        hashed_password=hash_password("testpassword")
     )
     db_session.add(user)
     await db_session.commit()
@@ -256,11 +260,11 @@ async def test_auth_token_refresh(
         )
         
         if refresh_response.status_code == 200:
-            print(f"✅ Renovação de token implementada e funcionando")
+            print(f"[OK] Renovacao de token implementada e funcionando")
         else:
-            print(f"⚠️ Endpoint de renovação retornou {refresh_response.status_code}")
+            print(f"[WARN] Endpoint de renovacao retornou {refresh_response.status_code}")
             
     except Exception as e:
-        print(f"ℹ️ Endpoint de renovação não implementado ainda: {e}")
+        print(f"[INFO] Endpoint de renovacao nao implementado ainda: {e}")
     
-    print(f"✅ Teste de renovação de token concluído")
+    print(f"[OK] Teste de renovacao de token concluido")
