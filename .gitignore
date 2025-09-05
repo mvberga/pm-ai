@@ -1,0 +1,52 @@
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+.env
+.env.*
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node/JS
+node_modules/
+yarn.lock
+pnpm-lock.yaml
+coverage/
+dist/
+.build/
+
+# Frontend/Backend na pasta Aplicação
+Aplicação/**/node_modules/
+Aplicação/**/.venv/
+Aplicação/**/.env
+Aplicação/**/dist/
+Aplicação/**/coverage/
+Aplicação/**/htmlcov/
+Aplicação/**/__pycache__/
+Aplicação/backend/pmdb*.db
+Aplicação/backend/*.sqlite
+Aplicação/backend/*.db
+
+# Build/Artefatos
+*.egg-info/
+.eggs/
+.build/
+.cache/
+
+# SO/Outros
+*.tmp
+*.bak
+~$*
