@@ -14,7 +14,7 @@ Arquivo complementar em `documentações/RESUMO_ESTRUTURA_CODIGO.txt` com:
 [![E2E Real](https://github.com/mvberga/pm-ai/actions/workflows/e2e-real.yml/badge.svg)](https://github.com/mvberga/pm-ai/actions/workflows/e2e-real.yml)
 
 **Data de Criação:** 28 de Agosto de 2025  
-**Última Atualização:** 4 de Setembro de 2025  
+**Última Atualização:** 5 de Setembro de 2025  
 **Status Atual:** 🎉 **BACKEND 100% TESTADO E FUNCIONAL + ARQUITETURA EXPANDIDA + FASE 2 CONCLUÍDA + FASE 3 MONITORING & LOGGING CONCLUÍDA** + **Frontend com Report Executivo, tema primary e E2E**  
 **Próxima Ação:** Production Deployment - Deploy em staging, testes de integração, deploy em produção
 
@@ -99,6 +99,19 @@ O **PM AI MVP** é uma ferramenta moderna de gestão de projetos com inteligênc
 - **Banco de Teste**: SQLite em memória para testes
 - **Isolamento**: Fixtures isolados e robustos
 - **Status**: ✅ 100% funcional e testado
+
+---
+
+## 💻 **Ambiente de Desenvolvimento (Docker Compose Dev)**
+
+- **Guia completo**: [documentações/BOAS_PRATICAS_DOCKER.md](documentações/BOAS_PRATICAS_DOCKER.md)
+- **Subir stack (dev)**:
+```bash
+cd Aplicação
+docker compose -f docker-compose.dev.yml up --build
+```
+- **Acessos**: `http://127.0.0.1:5173` (frontend) • `http://127.0.0.1:8000/health` (backend)
+- **Proxy Vite (opcional)**: elimina CORS; ver guia para usar `/api` → backend
 
 ---
 
@@ -230,18 +243,35 @@ npm run test:coverage
 
 # E2E local (preview)
 npm run build && npm run preview
-set CYPRESS_BASE_URL=http://localhost:5173 && npm run cypress:run
+set CYPRESS_BASE_URL=http://127.0.0.1:5173 && npm run cypress:run
 
 # E2E via Docker Compose
 cd ..
 docker compose up -d --build
 # frontend expõe em http://localhost:5174
 cd frontend
-set CYPRESS_BASE_URL=http://localhost:5174 && npm run cypress:run
+set CYPRESS_BASE_URL=http://127.0.0.1:5174 && npm run cypress:run
 
 # Fluxo REAL reativado (contra backend)
-set CYPRESS_BASE_URL=http://localhost:5174 && npx cypress run --spec "cypress/e2e/project_real.cy.js"
+set CYPRESS_BASE_URL=http://127.0.0.1:5174 && npx cypress run --spec "cypress/e2e/project_real.cy.js"
 ```
+
+### **Rotas principais (Frontend)**
+- `/login` (pública)
+- `/hub` (protegida): select filtrado por permissões e persistência `selectedProject`
+- `/projects/status` (protegida): 3 abas com persistência (`pm_status_ctx_v1` + `status_last_tab`)
+- `/projects/:id/workspace` (protegida): abas locais (cronograma, kanban, checklist, riscos, lições, próximos passos, extração) com persistência em `localStorage`
+- `/importer` (protegida): navegação apenas
+
+### **Chaves de localStorage relevantes**
+- `pm_status_ctx_v1` – estado do Report (aba, filtros, paginação)
+- `status_last_tab` – aba ativa (compatibilidade)
+- `selectedProject` – projeto selecionado (Hub/Status/Workspace)
+- `pm_projects_normalized_v1` / `importer_last_payload` – fallback de dados
+- `ws_*` – dados do Workspace: `ws_schedule_p{id}`, `ws_verticalsKanbanStatus_p{id}`, `ws_checklist_p{id}`, `ws_productNotes_p{id}`, `ws_risks_p{id}`, `ws_lessonsLearnedData_p{id}`, `ws_nextStepsData_p{id}`
+
+### **Guia do Report Executivo**
+Ver `frontend/GUIA_FRONTEND_REPORT_EXECUTIVO.md` para detalhes de abas, API, persistências e testes.
 
 ---
 
@@ -291,6 +321,22 @@ frontend/
 - 🧪 **Estrutura**: Componentes básicos implementados
 - 🧪 **Testes**: Não implementados
 - 🧪 **Integração**: Não testada
+
+### **Segurança local (evitar exposição)**
+- Bind de portas apenas no loopback:
+```yaml
+# Exemplo de mapeamento de portas no Docker Compose (dev)
+ports:
+  - "127.0.0.1:5173:5173"  # Vite (dev)
+  - "127.0.0.1:5174:5174"  # Frontend (compose preview)
+  - "127.0.0.1:8000:8000"  # FastAPI (backend)
+```
+- Vite/FastAPI: evite `--host 0.0.0.0` em dev; use loopback.
+- Windows Firewall: permitir apps apenas na Rede Privada; não habilitar na Pública.
+- Variáveis de ambiente: não commitar `.env` reais; use `.env.example` e `--env-file`.
+- Artefatos locais (ex.: `*.db`, `htmlcov/`): não expor nem usar em produção.
+- Cypress: manter `CYPRESS_BASE_URL` em `http://127.0.0.1`; não usar IP público.
+- Produção: habilitar TLS (Nginx), bloquear portas de dev e configurar CORS estrito.
 
 ---
 
@@ -371,3 +417,4 @@ O sistema está completamente funcional com:
 - **🔗 Status dos Testes Integração:** [documentações/TESTES_INTEGRACAO_STATUS.md](documentações/TESTES_INTEGRACAO_STATUS.md)
 - **⚡ Status dos Testes Performance:** [documentações/TESTES_PERFORMANCE_STATUS.md](documentações/TESTES_PERFORMANCE_STATUS.md)
 - **🏗️ Arquitetura do Backend Expandida:** [documentações/ARQUITETURA_BACKEND_EXPANDIDA.md](documentações/ARQUITETURA_BACKEND_EXPANDIDA.md)
+- **🧰 Boas Práticas de Docker (Dev):** [documentações/BOAS_PRATICAS_DOCKER.md](documentações/BOAS_PRATICAS_DOCKER.md)

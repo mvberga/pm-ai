@@ -1,9 +1,16 @@
 # 🚀 PM AI MVP - Ferramenta de Gestão de Projetos com IA
 
 **Data de Criação:** Janeiro 2025  
-**Última Atualização:** 29 de Agosto de 2025  
-**Versão:** 1.1.2  
-**Status:** ✅ Atualizado para seguir padrões de versionamento
+**Última Atualização:** 05 de Setembro de 2025  
+**Versão:** 1.2.0  
+**Status:** ✅ Sistema de Autenticação e Testes Corrigidos
+
+> Frente Prioritária URGENTE: Report Executivo (Frontend)
+>
+> - Rota alvo: `/projects/status`
+> - Guia: `Aplicação/documentações/frontend/GUIA_FRONTEND_REPORT_EXECUTIVO.md`
+> - Verificação entre camadas: `Aplicação/documentações/engenharia/VERIFICACAO_COMUNICACOES.md`
+> - Protótipo visual de referência: `Backlog/frontend v3/Unificado.html` (Status – 3 abas)
 
 ---
 
@@ -13,6 +20,8 @@ O **PM AI MVP** é uma ferramenta de gestão de projetos com FastAPI, React e Po
 
 ### **✅ Status Atual**
 - **MVP Completamente Estabilizado** seguindo padrões de engenharia robustos
+- **Sistema de Autenticação Funcionando** com JWT e proteção de endpoints
+- **Testes de Integração Corrigidos** e passando com sucesso
 - **Base sólida** para desenvolvimento contínuo
 - **Pronto para evolução** funcional e escalabilidade
 
@@ -80,6 +89,11 @@ docker compose up -d --build
 - **`Aplicação/documentações/adr/`** - ADRs de UI (decisões de layout)
 - **`Aplicação/documentações/ÍNDICE_DOCUMENTAÇÃO.md`** - Navegação rápida por toda documentação
 
+### 🔥 Frente Prioritária do Frontend
+- **Report Executivo (rota `/projects/status`)** — Implementar layout e componentes conforme o blueprint Status do `Unificado.html`, consumindo a API real. Consulte:
+  - `Aplicação/documentações/frontend/GUIA_FRONTEND_REPORT_EXECUTIVO.md`
+  - `Aplicação/documentações/engenharia/VERIFICACAO_COMUNICACOES.md`
+
 ### **📋 Para Planejamento**
 - **`Aplicação/documentações/PRÓXIMOS_PASSOS.md`** - Roadmap e cronograma
 - **`Aplicação/documentações/SPEC.md`** - Especificações do produto
@@ -96,10 +110,12 @@ docker compose up -d --build
 ## 🎯 **Funcionalidades (MVP)**
 
 ### **✅ Implementado**
-- **Autenticação**: Google Sign-In (stub para desenvolvimento)
-- **Projetos**: CRUD completo com metadados
+- **Autenticação**: Google Sign-In com JWT e proteção de endpoints
+- **Projetos**: CRUD completo com metadados e autenticação
 - **Checklists**: Grupos e itens tipificados (Ação/Documentação)
 - **Central de Ações**: Criação, filtros e atualização
+- **Testes**: Suite completa de testes de integração funcionando
+- **Segurança**: Endpoints protegidos com autenticação obrigatória
 
 ### **🚀 Próximas Fases**
 - **Fase 2**: Gantt, Kanban, sistema de reuniões, pipeline de IA
@@ -200,12 +216,23 @@ start .\htmlcov\index.html
 - ✅ Padrões de código implementados
 - ✅ Observabilidade configurada
 - ✅ Base sólida estabelecida
+- ✅ Sistema de autenticação corrigido e funcionando
+- ✅ Testes de integração corrigidos e passando
+- ✅ Endpoints protegidos com autenticação adequada
 
-### **🚀 Fase 2: Evolução Funcional (PRÓXIMA - 2-3 semanas)**
-- 📊 Gantt e Kanban para visualização
-- 📝 Sistema de reuniões e transcrições
-- 🤖 Pipeline de IA com embeddings
-- 📚 Base de conhecimento vetorial
+### **🚀 Fase 2: Evolução Funcional (PRIORIDADE ATUAL)**
+- 🔥 Prioridade URGENTE: Report Executivo (rota `/projects/status`)
+  - Layout dark, fonte Inter e cor primária `#0761FF` alinhados ao `Unificado.html`
+  - KPIs, tabela de projetos com ações pendentes, abas Visão Geral / Cronograma / Financeiro
+  - Consumo de API: `GET /api/v1/projects`, `GET /api/v1/projects/{id}/action-items`
+  - Testes unit (Jest/RTL) e smoke E2E (Cypress) para a rota
+  - Checklist de verificação entre camadas concluído
+  
+  Próximas frentes (não urgentes):
+  - 📊 Gantt e Kanban
+  - 📝 Sistema de reuniões e transcrições
+  - 🤖 Pipeline de IA com embeddings
+  - 📚 Base de conhecimento vetorial
 
 ### **🔮 Fases Futuras**
 - **Fase 3**: Escalabilidade e modelos ML
