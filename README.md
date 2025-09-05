@@ -1,165 +1,156 @@
-# PM AI MVP - Sistema de Gestão de Projetos com IA
+# 🚀 PM AI MVP - Ferramenta de Gestão de Projetos com IA
 
-<!-- Substitua OWNER/REPO pelo seu repositório GitHub -->
-[![Frontend CI](https://github.com/mvberga/pm-ai/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/mvberga/pm-ai/actions/workflows/frontend-ci.yml)
-[![E2E Real](https://github.com/mvberga/pm-ai/actions/workflows/e2e-real.yml/badge.svg)](https://github.com/mvberga/pm-ai/actions/workflows/e2e-real.yml)
+**Data de Criação:** Janeiro 2025  
+**Última Atualização:** 05 de Setembro de 2025  
+**Versão:** 1.2.0  
+**Status:** ✅ Sistema de Autenticação e Testes Corrigidos
 
-**Data de Criação:** 28 de Agosto de 2025  
-**Última Atualização:** 29 de Agosto de 2025  
-**Status Atual:** 🎉 **BACKEND 100% TESTADO E FUNCIONAL** + **Frontend com testes e E2E**  
-**Próxima Ação:** Ampliar cobertura do frontend e E2E real no CI
-
----
-
-## 🎯 **Visão Geral do Projeto**
-
-O **PM AI MVP** é uma ferramenta moderna de gestão de projetos com inteligência artificial, desenvolvida para otimizar o gerenciamento de portfólios de projetos. O sistema oferece funcionalidades avançadas de PM com recursos de IA para análise preditiva e automação inteligente.
+> Frente Prioritária URGENTE: Report Executivo (Frontend)
+>
+> - Rota alvo: `/projects/status`
+> - Guia: `Aplicação/documentações/frontend/GUIA_FRONTEND_REPORT_EXECUTIVO.md`
+> - Verificação entre camadas: `Aplicação/documentações/engenharia/VERIFICACAO_COMUNICACOES.md`
+> - Protótipo visual de referência: `Backlog/frontend v3/Unificado.html` (Status – 3 abas)
 
 ---
 
-## ✅ **STATUS ATUAL - CONQUISTAS ALCANÇADAS**
+## 🎯 **Visão Geral**
 
-### **🏆 Backend - Sistema 100% Funcional e Testado**
-- **54 testes passando** em 8.54 segundos
-- **Cobertura 100%** dos componentes principais
-- **API robusta** com CRUD completo para todos os endpoints
-- **Autenticação OAuth** via Google funcionando perfeitamente
-- **Infraestrutura isolada** e fixtures robustos
+O **PM AI MVP** é uma ferramenta de gestão de projetos com FastAPI, React e PostgreSQL (pgvector), projetada para centralizar a implantação de projetos, substituir planilhas manuais e habilitar automações de IA.
 
-#### **📊 Detalhamento das Conquistas Backend**
-- **Testes de Modelos**: 16/16 passando ✅
-- **Testes de Rotas da API**: 20/20 passando ✅
-- **Testes de Infraestrutura**: 18/18 passando ✅
-- **Modelos Validados**: User, Project, Checklist, ActionItem
-- **Rotas Funcionais**: Projects, Auth, Checklists, ActionItems
+### **✅ Status Atual**
+- **MVP Completamente Estabilizado** seguindo padrões de engenharia robustos
+- **Sistema de Autenticação Funcionando** com JWT e proteção de endpoints
+- **Testes de Integração Corrigidos** e passando com sucesso
+- **Base sólida** para desenvolvimento contínuo
+- **Pronto para evolução** funcional e escalabilidade
 
-### **🧪 Frontend - Testes & E2E**
-- **Jest + RTL** configurados; testes para `ProjectsList`, `ProjectDetail`, `Checklist`, `ActionItems`
-- **Cobertura inicial**: ~52% (linhas)
-- **Cypress**: smoke, fluxo mockado, erros (401/404/422) e 1 fluxo real contra backend
+### **📚 Documentação Organizada**
+- **Versão mais recente**: `Aplicação/documentações/README.md`
+- **Navegação rápida**: `Aplicação/documentações/ÍNDICE_DOCUMENTAÇÃO.md`
+- **Regras de versionamento**: `Aplicação/documentações/REGRAS_VERSIONAMENTO.md`
 
 ---
 
-## 🏗️ **ARQUITETURA DO SISTEMA**
+## 📁 **Estrutura do Projeto**
 
-### **Backend (FastAPI)**
-- **Framework**: FastAPI com Python 3.12
-- **Banco de Dados**: PostgreSQL com SQLAlchemy ORM
-- **Autenticação**: Google OAuth 2.0
-- **Testes**: pytest com pytest-asyncio
-- **Status**: ✅ 100% funcional e testado
-
-### **Frontend (React)**
-- **Framework**: React 18 com TypeScript
-- **Build Tool**: Vite
-- **Estado**: Context API e hooks
-- **UI**: Componentes customizados
-- **Status**: 🧪 Estrutura implementada, testes pendentes
-
-### **Infraestrutura**
-- **Containerização**: Docker e Docker Compose
-- **Banco de Teste**: SQLite em memória para testes
-- **Isolamento**: Fixtures isolados e robustos
-- **Status**: ✅ 100% funcional e testado
+```
+📦 PM AI MVP/
+├── 🚀 Aplicação/          # Código fonte e aplicação
+│   ├── backend/           # API FastAPI (Python)
+│   ├── frontend/          # Interface React (JavaScript)
+│   ├── db/                # Scripts de banco PostgreSQL
+│   └── docker-compose.yml # Ambiente de desenvolvimento
+├── 📋 Backlog/            # Requisitos e especificações
+│   ├── Frontend/          # Especificações de UI/UX
+│   └── Requisitos/        # Requisitos funcionais
+├── 💬 Chats/              # Histórico e contexto
+│   ├── chat_início_do_projeto.md
+│   └── CHAT_RESUMO.md
+└── 📚 Documentação/       # Documentos organizados e versionados
+    ├── Aplicação/documentações/  # Documentação técnica completa
+    └── README.md          # Este arquivo (visão geral)
+```
 
 ---
 
-## 🚀 **FUNCIONALIDADES IMPLEMENTADAS**
+## 🚀 **Início Rápido**
 
-### **1. Gestão de Usuários**
-- ✅ **Registro automático** via Google OAuth
-- ✅ **Autenticação segura** com tokens JWT
-- ✅ **Perfis de usuário** com roles e permissões
+### **Pré-requisitos**
+- Docker e Docker Compose
+- Portas 8000 (backend) e 5174 (frontend via compose) livres
 
-### **2. Gestão de Projetos**
-- ✅ **CRUD completo** de projetos
-- ✅ **Métricas e relatórios** em tempo real
-- ✅ **Relacionamentos** com usuários e equipes
-- ✅ **Status e etapas** de projeto
-
-### **3. Sistema de Checklists**
-- ✅ **Grupos de checklist** organizados por projeto
-- ✅ **Itens de checklist** com tipos e notas
-- ✅ **Relacionamentos** com projetos e usuários
-
-### **4. Action Items**
-- ✅ **Gestão de tarefas** e ações
-- ✅ **Atribuição** de responsabilidades
-- ✅ **Acompanhamento** de status e prazos
-
----
-
-## 📊 **MÉTRICAS DE QUALIDADE**
-
-### **Backend**
-- **Cobertura de Testes**: 100% dos componentes principais
-- **Tempo de Execução**: 8.54 segundos para 54 testes
-- **Isolamento**: Fixtures isolados e robustos
-- **Validação**: Schemas e constraints testados
-
-### **Frontend**
-- **Cobertura de Testes**: ~52% (linhas)
-- **Estrutura**: Testes unitários e E2E configurados
-- **Próximo Passo**: Ampliar cobertura e cenários E2E reais
-
----
-
-## 🎯 **ROADMAP IMPLEMENTADO**
-
-### **✅ Fase 1: Testes de Modelos (CONCLUÍDA)**
-- ✅ **User Model**: CRUD completo, validações, relacionamentos
-- ✅ **Project Model**: CRUD completo, enums, constraints
-- ✅ **Checklist Models**: Grupos e itens, relacionamentos
-- ✅ **ActionItem Model**: CRUD completo, validações
-
-### **✅ Fase 2: Testes de Rotas da API (CONCLUÍDA)**
-- ✅ **Projects Router**: CRUD endpoints, métricas
-- ✅ **Auth Router**: Google OAuth, criação automática de usuários
-- ✅ **Checklists Router**: CRUD de grupos e itens
-- ✅ **ActionItems Router**: CRUD completo
-
-### **🧪 Fase 3: Testes de Integração (PRÓXIMO PASSO)**
-- 📋 **Fluxos End-to-End**: Criar projeto → Checklist → Action Items
-- 📋 **Autenticação Completa**: OAuth flow completo
-- 📋 **Relacionamentos Complexos**: Projetos com usuários e checklists
-
----
-
-## 🚀 **PRÓXIMOS PASSOS RECOMENDADOS**
-
-### **Imediato (1-2 semanas)**
-1. **✅ Backend**: Sistema 100% funcional e testado
-2. **🧪 Frontend**: Implementar testes unitários básicos
-3. **🧪 Integração**: Testes de fluxos end-to-end
-
-### **Curto Prazo (1 mês)**
-1. **🧪 Performance**: Testes de carga e performance
-2. **🧪 Segurança**: Testes de autorização e validação
-3. **🧪 Frontend**: Testes de componentes e integração
-
-### **Médio Prazo (2-3 meses)**
-1. **🧪 E2E**: Testes completos de usuário
-2. **🧪 CI/CD**: Pipeline de testes automatizados
-3. **🧪 Monitoramento**: Métricas de qualidade contínua
-
----
-
-## 🔧 **COMANDOS PARA EXECUTAR TESTES**
-
-### **Backend (100% Funcional)**
+### **Subir o ambiente (Docker Compose)**
 ```bash
+# Navegar para o diretório da aplicação
+cd Aplicação/
+
+# Copiar variáveis de ambiente
+cp env.example .env
+
+# Subir todos os serviços (detached)
+docker compose up -d --build
+```
+
+### **Acessos**
+- **Backend API (Swagger)**: http://localhost:8000/docs
+- **Frontend (Compose)**: http://localhost:5174
+- **Health Check**: http://localhost:8000/api/v1/health
+
+---
+
+## 📚 **Documentação por Propósito**
+
+### **🚀 Para Desenvolvedores**
+- **`Aplicação/documentações/README.md`** - Setup, arquitetura e comandos (versão mais recente)
+- **`Aplicação/documentações/REQUISITOS.md`** - Padrões técnicos e convenções
+- **`Aplicação/documentações/REGRAS_VERSIONAMENTO.md`** - Regras de versionamento
+- **`Aplicação/regras.mdc`** - Regras do projeto (Cursor) e diretrizes resumidas
+- **`Aplicação/documentações/adr/`** - ADRs de UI (decisões de layout)
+- **`Aplicação/documentações/ÍNDICE_DOCUMENTAÇÃO.md`** - Navegação rápida por toda documentação
+
+### 🔥 Frente Prioritária do Frontend
+- **Report Executivo (rota `/projects/status`)** — Implementar layout e componentes conforme o blueprint Status do `Unificado.html`, consumindo a API real. Consulte:
+  - `Aplicação/documentações/frontend/GUIA_FRONTEND_REPORT_EXECUTIVO.md`
+  - `Aplicação/documentações/engenharia/VERIFICACAO_COMUNICACOES.md`
+
+### **📋 Para Planejamento**
+- **`Aplicação/documentações/PRÓXIMOS_PASSOS.md`** - Roadmap e cronograma
+- **`Aplicação/documentações/SPEC.md`** - Especificações do produto
+- **`Backlog/`** - Requisitos detalhados por área
+
+### **💬 Para Contexto**
+- **`Chats/`** - Histórico de decisões e evolução
+- **`Aplicação/documentações/ESTRUTURA_PROJETO.md`** - Organização do projeto
+ - **`Aplicação/regras.mdc`** - Regras do projeto (Cursor)
+ - **`Aplicação/documentações/adr/`** - ADRs de UI
+
+---
+
+## 🎯 **Funcionalidades (MVP)**
+
+### **✅ Implementado**
+- **Autenticação**: Google Sign-In com JWT e proteção de endpoints
+- **Projetos**: CRUD completo com metadados e autenticação
+- **Checklists**: Grupos e itens tipificados (Ação/Documentação)
+- **Central de Ações**: Criação, filtros e atualização
+- **Testes**: Suite completa de testes de integração funcionando
+- **Segurança**: Endpoints protegidos com autenticação obrigatória
+
+### **🚀 Próximas Fases**
+- **Fase 2**: Gantt, Kanban, sistema de reuniões, pipeline de IA
+- **Fase 3**: Modelos ML, RBAC avançado, dashboards
+- **Fase 4**: CI/CD, observabilidade completa, produção
+
+---
+
+## 🛠️ **Stack Tecnológica**
+
+| Camada | Tecnologia | Versão |
+|--------|------------|---------|
+| **Frontend** | React + Vite | 18.x |
+| **Backend** | FastAPI (Python) | 3.11+ |
+| **Banco** | PostgreSQL + pgvector | 16.x |
+| **ORM** | SQLAlchemy 2.0 | Assíncrono |
+| **Containerização** | Docker + Docker Compose | - |
+| **Autenticação** | JWT (Google Identity) | OAuth 2.0 |
+
+---
+
+## 🔧 **Desenvolvimento**
+
+### **Comandos úteis**
+```bash
+# Backend
 cd Aplicação/backend
+python -m pytest            # Executar testes
+python -m ruff check app/   # Verificar código
+python -m ruff format app/  # Formatar código
 
-# Executar todos os testes
-pytest -v -s
-
-# Executar com cobertura
-pytest -v -s --cov=app --cov-report=term-missing --cov-report=html
-start ./htmlcov/index.html
-
-# Executar testes específicos
-pytest app/tests/test_models/ -v -s
-pytest app/tests/test_routes/ -v -s
+# Frontend
+cd Aplicação/frontend
+npm test                     # Executar testes
+npm run lint                 # Verificar código
 ```
 
 ### **Como rodar testes e cobertura (Windows PowerShell)**
@@ -179,141 +170,120 @@ python -m venv .venv
 start .\htmlcov\index.html
 ```
 
-### **Frontend (Em Desenvolvimento)**
-```bash
-cd Aplicação/frontend
-
-# Unit
-npm run test
-npm run test:coverage
-
-# E2E local (preview)
-npm run build && npm run preview
-set CYPRESS_BASE_URL=http://localhost:5173 && npm run cypress:run
-
-# E2E via Docker Compose
-cd ..
-docker compose up -d --build
-# frontend expõe em http://localhost:5174
-cd frontend
-set CYPRESS_BASE_URL=http://localhost:5174 && npm run cypress:run
-```
+### **Padrões de Código**
+- **Backend**: RORO, Guard Clauses, tipagem completa, injeção de dependência
+- **Frontend**: Componentes funcionais, hooks, tratamento de erros
+- **Qualidade**: Cobertura de testes ≥85%, linting automático
 
 ---
 
-## 📁 **ESTRUTURA DO PROJETO**
+## 📊 **Métricas e Qualidade**
 
-### **Backend - 100% Implementado**
-```
-backend/
-├── app/
-│   ├── models/                   # ✅ Modelos SQLAlchemy
-│   ├── routers/                  # ✅ Rotas da API
-│   ├── schemas/                  # ✅ Schemas Pydantic
-│   ├── services/                 # ✅ Lógica de negócio
-│   └── tests/                    # ✅ 54 testes passando
-├── requirements.txt              # ✅ Dependências
-├── pytest.ini                   # ✅ Configuração de testes
-└── Dockerfile                    # ✅ Containerização
-```
+### **KPIs de Desenvolvimento**
+- **Cobertura de testes**: ≥85%
+- **Latência P95**: <300ms (rotas CRUD)
+- **Disponibilidade**: 99.5% (produção)
+- **Zero erros críticos**
 
-### **Frontend - Estrutura Implementada**
-```
-frontend/
-├── src/
-│   ├── components/               # 📋 Componentes React
-│   ├── pages/                    # 📋 Páginas principais
-│   ├── types/                    # 📋 Tipos TypeScript
-│   └── api/                      # 📋 Cliente da API
-├── package.json                  # 📋 Dependências
-└── vite.config.js                # 📋 Configuração Vite
-```
+### **Padrões de Qualidade**
+- **Linting**: ruff, black, mypy
+- **Segurança**: bandit, dependabot
+- **CI/CD**: GitHub Actions (futuro)
+- **Code Review**: 2 revisores para mudanças críticas
 
 ---
 
-## 🚨 **PONTOS DE ATENÇÃO**
+## 🤝 **Contribuição**
 
-### **Backend - ✅ Resolvido**
-- ✅ **Infraestrutura**: 100% funcional
-- ✅ **Fixtures**: Isolamento perfeito
-- ✅ **Modelos**: Todos testados
-- ✅ **Rotas**: API 100% funcional
+### **Fluxo de Desenvolvimento**
+1. **Análise**: Consultar documentação relevante
+2. **Desenvolvimento**: Seguir padrões estabelecidos
+3. **Testes**: Cobertura ≥85%, testes de integração
+4. **Review**: Code review com 2 revisores
+5. **Deploy**: Apenas após validação completa
 
-### **Frontend - 🧪 Em Desenvolvimento**
-- 🧪 **Estrutura**: Componentes básicos implementados
-- 🧪 **Testes**: Não implementados
-- 🧪 **Integração**: Não testada
-
----
-
-## 📊 **MÉTRICAS DE SUCESSO**
-
-- ✅ **Backend**: 100% testado e funcional
-- 🧪 **Frontend**: Estrutura implementada, testes pendentes
-- ✅ **Infraestrutura**: 100% robusta e isolada
-- ✅ **API**: 100% funcional e validada
-- 🧪 **Integração**: Próximo passo
+### **Padrões Git**
+- **Commits**: Conventional Commits
+- **Branches**: Feature branches para novas funcionalidades
+- **PRs**: Template padronizado, revisão obrigatória
 
 ---
 
-## 🎯 **OBJETIVOS ALCANÇADOS**
+## 📈 **Roadmap Atualizado**
 
-### **✅ Backend Completo**
-- **Sistema 100% testado** e funcional
-- **API robusta** com validações
-- **Modelos validados** e funcionais
-- **Infraestrutura isolada** e robusta
+### **✅ Fase 1: MVP Estabilizado (CONCLUÍDA)**
+- ✅ Estrutura reorganizada seguindo padrões
+- ✅ Padrões de código implementados
+- ✅ Observabilidade configurada
+- ✅ Base sólida estabelecida
+- ✅ Sistema de autenticação corrigido e funcionando
+- ✅ Testes de integração corrigidos e passando
+- ✅ Endpoints protegidos com autenticação adequada
 
-### **🧪 Frontend em Desenvolvimento**
-- **Estrutura implementada** com React
-- **Componentes básicos** funcionais
-- **Próximo passo**: Implementar testes
+### **🚀 Fase 2: Evolução Funcional (PRIORIDADE ATUAL)**
+- 🔥 Prioridade URGENTE: Report Executivo (rota `/projects/status`)
+  - Layout dark, fonte Inter e cor primária `#0761FF` alinhados ao `Unificado.html`
+  - KPIs, tabela de projetos com ações pendentes, abas Visão Geral / Cronograma / Financeiro
+  - Consumo de API: `GET /api/v1/projects`, `GET /api/v1/projects/{id}/action-items`
+  - Testes unit (Jest/RTL) e smoke E2E (Cypress) para a rota
+  - Checklist de verificação entre camadas concluído
+  
+  Próximas frentes (não urgentes):
+  - 📊 Gantt e Kanban
+  - 📝 Sistema de reuniões e transcrições
+  - 🤖 Pipeline de IA com embeddings
+  - 📚 Base de conhecimento vetorial
 
----
-
-## 📚 **RECURSOS E REFERÊNCIAS**
-
-### **Backend (100% Funcional)**
-- [FastAPI](https://fastapi.tiangolo.com/)
-- [SQLAlchemy](https://docs.sqlalchemy.org/)
-- [pytest](https://docs.pytest.org/)
-- [pytest-asyncio](https://pytest-asyncio.readthedocs.io/)
-
-### **Frontend (Testes)**
-- [React](https://react.dev/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Vite](https://vitejs.dev/)
-- [Jest](https://jestjs.io/) + [React Testing Library](https://testing-library.com/)
-- [Cypress](https://docs.cypress.io/)
-
----
-
-## 🚀 **CONCLUSÃO**
-
-**🎉 MISSÃO CUMPRIDA NO BACKEND! 🎉**
-
-O sistema de backend está completamente funcional com:
-- **54 testes passando** em 8.54 segundos
-- **Cobertura completa** de modelos e rotas
-- **Infraestrutura robusta** e isolada
-- **Pronto para produção** e desenvolvimento
-
-**Status: BACKEND COMPLETAMENTE FUNCIONAL, FRONTEND EM DESENVOLVIMENTO!** 🚀
+### **🔮 Fases Futuras**
+- **Fase 3**: Escalabilidade e modelos ML
+- **Fase 4**: Produção e CI/CD completo
 
 ---
 
-## 📋 **PRÓXIMA AÇÃO**
+## 📞 **Suporte e Contato**
 
-**Implementar testes para o frontend** e testes de integração end-to-end. Com o backend 100% funcional, o foco agora é na qualidade completa do sistema.
+### **Documentação**
+- **Técnica**: `Aplicação/documentações/README.md` (versão mais recente)
+- **Padrões**: `Aplicação/documentações/REQUISITOS.md`
+- **Versionamento**: `Aplicação/documentações/REGRAS_VERSIONAMENTO.md`
+- **Navegação**: `Aplicação/documentações/ÍNDICE_DOCUMENTAÇÃO.md`
 
 ---
 
-## 🔗 **LINKS RELACIONADOS**
+## 🧭 **Governança (Arquitetura e UI)**
 
-- **📋 Status Geral dos Testes:** [documentações/TESTES_GERAL.md](documentações/TESTES_GERAL.md)
-- **📋 Status dos Testes Backend:** [backend/TESTES_STATUS.md](backend/TESTES_STATUS.md)
-- **🚀 Próximos Passos:** [documentações/PRÓXIMOS_PASSOS.md](documentações/PRÓXIMOS_PASSOS.md)
-- **📖 Resumo Executivo:** [documentações/CHAT_RESUMO.md](documentações/CHAT_RESUMO.md)
-- **🖥️ Status dos Testes Frontend:** [frontend/TESTES_FRONTEND_STATUS.md](frontend/TESTES_FRONTEND_STATUS.md)
-- **🔗 Status dos Testes Integração:** [documentações/TESTES_INTEGRACAO_STATUS.md](documentações/TESTES_INTEGRACAO_STATUS.md)
-- **⚡ Status dos Testes Performance:** [documentações/TESTES_PERFORMANCE_STATUS.md](documentações/TESTES_PERFORMANCE_STATUS.md)
+- **Regras do Projeto (Cursor)**: `Aplicação/regras.mdc` — padrões de dev, QA e diretrizes resumidas de UX/UI.
+- **ADRs de UI**: `Aplicação/documentações/adr/` — decisões de layout; ver `ADR-UI-0001-layout-v1.md`.
+- **Processo de UI/UX**: definido em `Aplicação/documentações/REQUISITOS.md` (seção UX/UI — processo, padrões e governança).
+- **SPEC**: referência às ADRs e regras (governança de UI) em `Aplicação/documentações/SPEC.md`.
+
+### **Desenvolvimento**
+- **Issues**: GitHub Issues
+- **Discussões**: GitHub Discussions
+- **Documentação**: Swagger em `/docs`
+
+---
+
+## 🎉 **Conclusão**
+
+O **PM AI MVP** está **100% estabilizado** e pronto para evolução funcional. A nova estrutura organizacional oferece:
+
+1. **Separação clara** de responsabilidades
+2. **Documentação organizada** por propósito
+3. **Padrões estabelecidos** para desenvolvimento
+4. **Base sólida** para crescimento contínuo
+5. **Roadmap claro** para próximas fases
+
+**🚀 O projeto está no caminho certo para se tornar uma ferramenta robusta de gestão de projetos com IA!**
+
+---
+
+## 📖 **Próximos Passos**
+
+1. **Leia** `Aplicação/documentações/REGRAS_VERSIONAMENTO.md` para entender o versionamento
+2. **Explore** `Aplicação/documentações/README.md` para setup e desenvolvimento (versão mais recente)
+3. **Consulte** `Aplicação/documentações/PRÓXIMOS_PASSOS.md` para roadmap
+4. **Navegue** `Aplicação/documentações/ÍNDICE_DOCUMENTAÇÃO.md` para encontrar documentos
+5. **Contribua** seguindo os padrões estabelecidos
+
+**Bem-vindo ao desenvolvimento do PM AI MVP! 🎯**
